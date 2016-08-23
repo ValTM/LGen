@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="css/general.css">
+    <script type="application/javascript" src="js/generator.js"></script>
+    <script type="application/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script type="application/javascript" src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Level generator</title>
+</head>
+<body>
+<h1>Level generator</h1>
+
+<div class="m5pxa">
+    <h3>Please select level type</h3>
+    <input type="radio" name="toggler" value="1">Tower defense type<br>
+    <input type="radio" name="toggler" value="2">Walled room with doors type<br>
+    <input type="radio" name="toggler" value="3">Open walls room type<br>
+</div>
+<hr>
+<div class="ib m5pxa"><h3>Enter level properties</h3>
+
+    <div>
+        <input maxlength="2" type="text" id="ninput" class="smalltextinput fl" value="20">
+        <p class="fl m5pxlr">by</p>
+        <input maxlength="2" type="text" id="ninput2" class="smalltextinput fl" value="14">
+        <p class="fl m5pxlr">tiles</p>
+    </div>
+</div>
+<hr>
+<div class="m5pxa">
+    <!--TD type inputs-->
+    <div id="blk-1" class="toHide" style="display:none;">
+        <h3>Tower Defense type</h3>
+        <input type="text" id="entrances" maxlength="1" class="smalltextinput fl" value="1">
+        <p class="fl m5pxlr"> entrances</p><br>
+        <input type="text" id="exits" maxlength="1" class="smalltextinput fl" value="1">
+        <p class="fl m5pxlr"> exits</p><br>
+        <input type="submit" id="tdsubmit" value="Generate" onclick="generateLevel(0)">
+    </div>
+    <!--BoI type inputs-->
+    <div id="blk-2" class="toHide" style="display:none;">
+        <h3>Walled room with doors type</h3>
+        <p class="fl m5pxlr">Door N: </p><input type="radio" name="doorn" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="doorn" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
+        <p class="fl m5pxlr">Door E: </p><input type="radio" name="doore" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="doore" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
+        <p class="fl m5pxlr">Door S: </p><input type="radio" name="doors" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="doors" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
+        <p class="fl m5pxlr">Door W: </p><input type="radio" name="doorw" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="doorw" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
+        <input type="submit" id="boisubmit" value="Generate" onclick="generateLevel(1)">
+    </div>
+    <!--Open walls type inputs-->
+    <div id="blk-3" class="toHide" style="display:none;">
+        <h3>Open walls room type</h3>
+        <p class="fl m5pxlr">Wall N: </p><input type="radio" name="walln" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="walln" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
+        <p class="fl m5pxlr">Wall E: </p><input type="radio" name="walle" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="walle" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
+        <p class="fl m5pxlr">Wall S: </p><input type="radio" name="walls" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="walls" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
+        <p class="fl m5pxlr">Wall W: </p><input type="radio" name="wallw" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="wallw" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
+        <p class="fl m5pxlr">Generate corners: </p><input type="radio" name="wallc" value="true" class="fl"><p class="fl m5pxlr">Yes </p><input type="radio" name="wallc" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
+        <input type="submit" id="orsubmit" value="Generate" onclick="generateLevel(2)">
+    </div>
+</div>
+<div id="canvasDiv">
+    <canvas id="genCanvas"></canvas>
+</div>
+<script type="application/javascript">
+    $(function () {
+        $("[name=toggler]").click(function () {
+            $('.toHide').hide();
+            $("#blk-" + $(this).val()).show('slow');
+        });
+    });
+</script>
+</body>
+</html>
