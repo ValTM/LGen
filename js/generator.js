@@ -70,6 +70,18 @@ function loadTiles(imgscalex, imgscaley) {
     doortexture.scaleX = imgscalex;
     doortexture.scaleY = imgscaley;
     textures.push(doortexture);
+    var tree1texture = new createjs.Bitmap("res/tree1.png");
+    tree1texture.scaleX = imgscalex;
+    tree1texture.scaleY = imgscaley;
+    textures.push(tree1texture);
+    var tree2texture = new createjs.Bitmap("res/tree2.png");
+    tree2texture.scaleX = imgscalex;
+    tree2texture.scaleY = imgscaley;
+    textures.push(tree2texture);
+    var tree3texture = new createjs.Bitmap("res/tree3.png");
+    tree3texture.scaleX = imgscalex;
+    tree3texture.scaleY = imgscaley;
+    textures.push(tree3texture);
     return textures;
 }
 function checkUpLeft(tiles, overx, overy) {
@@ -99,7 +111,7 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
     var i, j, temp;
     for (i = 0; i < n; i++) {
         for (j = 0; j < m; j++) {
-            tiles[i][j] = new TileTdProto(i * xsize, j * ysize, "", floortexture.clone(), "", "", "", i + ":" + j);
+            tiles[i][j] = new TileTdProto(i * xsize, j * ysize, "", floortexture.clone(), "", "", "", "");
             //console.log("Adding tile[" + i + "][" + j + "] with coords " + tiles[i][j].x + ":" + tiles[i][j].y);
             temp = tiles[i][j].texture;
             temp.x = tiles[i][j].x;
@@ -111,18 +123,18 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
     //stage.addChild(grasstile);
     var pathtiles = [];
     var randomtile = randomIntFromInterval(2, (m - 1) - 2); //m-1 since we're 0 based
-    var dirandom, tempx, tempy;
-    var generate = true;
-    var overx = 0;
-    var overy = randomtile;
-    console.log(randomtile);
+    var dirandom, oldX, oldY;
+    var generatePath = true;
+    var overX = 0;
+    var overY = randomtile;
     var path;
     //draw first tile
     path = textures[1].clone();
-    path.x = overx * xsize;
-    path.y = overy * ysize;
+    path.x = overX * xsize;
+    path.y = overY * ysize;
     pathtiles.push(path);
-    tiles[overx][overy].walkable = true;
+    tiles[overX][overY].tiletype = "path";
+    tiles[overX][overY].walkable = true;
 
     //TODO get from html
     var topchance = 33;
@@ -136,22 +148,21 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
      * @type {number}
      */
     var direction = 0;
-    //TODO chance as variable - if 1 is set - others are 100 - (1) / 2 floored + 100 - the result, if 2 are set third is 100 - (1) + (2)
-    //TODO chance 0 for different directions on check failures
     do {
-        if (overx === 0 || overx === n - 2) {
+        //CALCULATE DIRECTION
+        if (overX === 0 || overX === n - 2) {//FIRST OR LAST TILE DIRECTION = RIGHT
             direction = 1;
-        } else {
+        } else {//CALCULATE DIRECTION BY CHANCE
             temptopchance = topchance;
             temprightchance = rightchance;
             tempdownchance = downchance;
 
             //disable up
-            if (overy - 1 <= 1 || tiles[overx][overy - 1].walkable === true || checkUpLeft(tiles, overx, overy)) {
+            if (overY - 1 <= 1 || tiles[overX][overY - 1].walkable === true || checkUpLeft(tiles, overX, overY)) {
                 temptopchance = 0;
             }
             //disable down
-            if (overy + 1 >= m - 2 || tiles[overx][overy + 1].walkable === true || checkDownLeft(tiles, overx, overy)) {
+            if (overY + 1 >= m - 2 || tiles[overX][overY + 1].walkable === true || checkDownLeft(tiles, overX, overY)) {
                 tempdownchance = 0;
             }
 
@@ -181,37 +192,72 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
             } else {//can not happen, safety code.
                 direction = 0;
             }
-        }
-        tempx = overx;
-        tempy = overy;
+        }//END OF DIRECTION CALCULATION
+
+        oldX = overX;
+        oldY = overY;
         switch(direction) {
             case 0:
-                overy--;
-                console.log("Going from " + tempx + ":" + tempy + " up to " + overx + ":" + overy);
+                overY--;
+                console.log("Going from " + oldX + ":" + oldY + " up to " + overX + ":" + overY);
                 break;
             case 2:
-                overy++;
-                console.log("Going from " + tempx + ":" + tempy + " down to " + overx + ":" + overy);
+                overY++;
+                console.log("Going from " + oldX + ":" + oldY + " down to " + overX + ":" + overY);
                 break;
             case 1:
-                overx++;
-                console.log("Going from " + tempx + ":" + tempy + " right to " + overx + ":" + overy);
+                overX++;
+                console.log("Going from " + oldX + ":" + oldY + " right to " + overX + ":" + overY);
                 break;
             default:
-                overx++;
+                overX++;
                 break;
         }
-        tiles[tempx][tempy].next = overx + ":" + overy;//chain the path tiles together
-        tiles[overx][overy].walkable = true;
+        tiles[oldX][oldY].next = overX + ":" + overY;//chain the path tiles together
+        tiles[overX][overY].tiletype = "path";
+        tiles[overX][overY].walkable = true;
         //TODO get texture rotation according to direction
         path = textures[1].clone();
-        path.x = overx * xsize;
-        path.y = overy * ysize;
+        path.x = overX * xsize;
+        path.y = overY * ysize;
         pathtiles.push(path);
-        if (overx === n - 1) {
-            generate = false;
+        if (overX === n - 1) {
+            generatePath = false;
         }
-    } while (generate);
+    } while (generatePath);
+
+    console.log(pathtiles.length + " tiles out of " + (n * m));
+
+    var etcTileChance = 66; //TODO get from HTML;
+    var etcTile;
+    var tlc, tcc, trc, lc, cc, rc, dlc, dcc, drc;
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < m; j++) {//TODO Fix check
+            /*tlc = typeof tiles[i-1][j-1] != 'undefined' ? tiles[i-1][j-1].tiletype !== "path" : true;
+            tcc = typeof tiles[i-1][j] != 'undefined' ? tiles[i-1][j].tiletype !== "path" : true;
+            trc = typeof tiles[i-1][j+1] != 'undefined' ? tiles[i-1][j+1].tiletype !== "path" : true;
+            lc = typeof tiles[i-1][j] != 'undefined' ? tiles[i-1][j].tiletype !== "path" : true;
+            cc = typeof tiles[i][j] != 'undefined' ? tiles[i][j].tiletype !== "path" : true;
+            rc = typeof tiles[i+1][j] != 'undefined' ? tiles[i+1][j].tiletype !== "path" : true;
+            dlc = typeof tiles[i+1][j-1] != 'undefined' ? tiles[i+1][j-1].tiletype !== "path" : true;
+            dcc = typeof tiles[i+1][j] != 'undefined' ? tiles[i+1][j].tiletype !== "path" : true;
+            drc = typeof tiles[i+1][j+1] != 'undefined' ? tiles[i+1][j+1].tiletype !== "path" : true;
+            if (tlc && tcc && trc && lc && cc && rc && dlc && dcc && drc) {*/
+            if (tiles[i][j].tiletype !== "path") {
+                if (randomIntFromInterval(1, 100) < etcTileChance) {
+                    etcTile = textures[randomIntFromInterval(7, 9)].clone();
+                    etcTile.x = i * xsize;
+                    etcTile.y = j * ysize;
+                    etcTile.tiletype = "etc";
+                    pathtiles.push(etcTile);
+                }
+            } else {
+                continue;
+            }
+        }
+    }
+
+
 
     pathtiles.forEach(function (element) {
         stage.addChild(element);
@@ -260,8 +306,6 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
     stage.update();
     //TODO
 }
-
-
 function generateOwLevel(n, m, stage, textures, xsize, ysize) {
     "use strict";
     var floortexture = textures[2];
@@ -292,7 +336,6 @@ function generateOwLevel(n, m, stage, textures, xsize, ysize) {
     stage.update();
     //TODO
 }
-
 function generateLevel(which) {
     "use strict";
     var n = $('#ninput').val();
@@ -312,6 +355,9 @@ function generateLevel(which) {
      * 4 - darkness
      * 5 - darkness corner
      * 6 - door
+     * 7 - tree1
+     * 8 - tree2
+     * 9 - tree3
      * @type {Array}
      */
     var textures = loadTiles(imgscalex, imgscaley);
