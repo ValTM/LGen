@@ -40,7 +40,5 @@ input[type='radio'] {
 }
 
 .canvasDiv {
-    width: 80%;
-    max-width: 80%;
-    min-width: 80%;
+    width: 1500px;
 }
