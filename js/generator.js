@@ -3,7 +3,9 @@ var TilesEnum = {
     BASIC: "BASIC",
     PATH: "PATH",
     WALL: "WALL",
-    DOOR: "DOOR"
+    DOOR: "DOOR",
+    DARK: "DARK",
+    DARKC: "DARKC"
 };
 function idCanvas(n, m) {
     "use strict";
@@ -249,6 +251,7 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
     var floortexture = textures[2];
     var walltexture = textures[3];
     var doortexture = textures[6];
+    var darktexture = textures[4];
     var doorn = $("input[name='doorn']:checked").val();
     var doore = $("input[name='doore']:checked").val();
     var doors = $("input[name='doors']:checked").val();
@@ -273,13 +276,13 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
             }
             switch (tiletype) {
                 case 0:
-                    tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, "basic", floortexture.clone(), "");
+                    tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, TilesEnum.BASIC, floortexture.clone(), "");
                     break;
                 case 1:
-                    tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, "door", doortexture.clone(), "");
+                    tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, TilesEnum.DOOR, doortexture.clone(), "");
                     break;
                 case 2:
-                    tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, "wall", walltexture.clone(), "");
+                    tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, TilesEnum.WALL, walltexture.clone(), "");
                     break;
             }
             temp = tiles[i][j].texture;
@@ -288,6 +291,47 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
             stage.addChild(temp);
         }
     }
+    var generateObstructions = true; //TODO get from html
+    var obstructionsPerc = 10;//TODO get from html
+    var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
+    var testtilex, testtiley;
+    var sidesize;
+    var maxtriescount = 0;
+    do {
+        maxtriescount += 1;
+        if (maxtriescount >= 5) {
+            generateObstructions = false;
+            alert("Could not generate obstructions, try different values of the variables!");
+            break;
+        }
+
+        //TODO >1 type of obstructions and random picker - random rocks, horiz or vert lines of rocks/wall
+        //darkness, at least 3x3
+        if (n > 7 && m > 7) {//Ensure we have some space
+            testtilex = randomIntFromInterval(2, n - 6);//m - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
+            testtiley = randomIntFromInterval(2, m - 6);//n - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
+            sidesize = Math.floor(Math.sqrt(obstructionsCount));
+            if (testtilex + sidesize < n - 2 && testtiley + sidesize < m - 2) { //check bounds
+                console.log("Generating darkness on " + testtilex + ":" + testtiley + " (spooky!)");
+                for (i = 0; i < sidesize; i += 1) {
+                    for (j = 0; j < sidesize; j += 1) {
+                        tiles[testtilex + i][testtiley + j] = new TileRoomProto((testtilex + i) * xsize, (testtiley + j) * ysize, TilesEnum.DARK, darktexture.clone(), "");
+                        temp = tiles[testtilex + i][testtiley + j].texture;
+                        temp.x = tiles[testtilex + i][testtiley + j].x;
+                        temp.y = tiles[testtilex + i][testtiley + j].y;
+                        stage.addChild(temp);
+                    }
+                }
+
+
+
+                generateObstructions = false;
+            } //retry if out of bounds
+        } else {//Quit if we're not generating
+            generateObstructions = false;
+        }
+    } while (generateObstructions);
+
     stage.update();
     //TODO
 }
@@ -325,6 +369,10 @@ function generateLevel(which) {
     "use strict";
     var n = $("#ninput").val();
     var m = $("#ninput2").val();
+    if (n < 8 || m < 8) {
+        alert("Please, choose bigger numbers for side sizes");
+        return;
+    }
     var canvas = idCanvas(n, m);
     var imgscalex = (canvas.width / n) / 100;
     var imgscaley = (canvas.height / m) / 100;
