@@ -1,3 +1,10 @@
+var TilesEnum = {
+    ETC: "ETC",
+    BASIC: "BASIC",
+    PATH: "PATH",
+    WALL: "WALL",
+    DOOR: "DOOR"
+};
 function idCanvas(n, m) {
     "use strict";
     var canvas = document.getElementById("genCanvas");
@@ -27,14 +34,13 @@ function TileTdProto(x, y, tiletype, texture, next) {
     this.texture = texture;
     this.next = next;
 }
-function TileRoomProto(x, y, tiletype, texture, tileorientation, walkable) {
+function TileRoomProto(x, y, tiletype, texture, tileorientation) {
     "use strict";
     this.x = x;
     this.y = y;
     this.tiletype = tiletype;
     this.texture = texture;
     this.tileorientation = tileorientation;
-    this.path = walkable;
 }
 function loadTiles(imgscalex, imgscaley) {
     "use strict";
@@ -84,7 +90,7 @@ function loadTiles(imgscalex, imgscaley) {
 function checkUpLeft(tiles, overx, overy) {
     "use strict";
     if (tiles[overx - 1][overy - 1] !== null) {
-        if (tiles[overx - 1][overy - 1].tiletype === "path") {
+        if (tiles[overx - 1][overy - 1].tiletype === TilesEnum.PATH) {
             return true;
         }
     }
@@ -93,7 +99,7 @@ function checkUpLeft(tiles, overx, overy) {
 function checkDownLeft(tiles, overx, overy) {
     "use strict";
     if (tiles[overx - 1][overy + 1] !== null) {
-        if (tiles[overx - 1][overy + 1].tiletype === "path") {
+        if (tiles[overx - 1][overy + 1].tiletype === TilesEnum.PATH) {
             return true;
         }
     }
@@ -106,7 +112,7 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
     var i, j, temp;
     for (i = 0; i < n; i += 1) {
         for (j = 0; j < m; j += 1) {
-            tiles[i][j] = new TileTdProto(i * xsize, j * ysize, "basic", floortexture.clone(), "");
+            tiles[i][j] = new TileTdProto(i * xsize, j * ysize, TilesEnum.BASIC, floortexture.clone(), "");
             //console.log("Adding tile[" + i + "][" + j + "] with coords " + tiles[i][j].x + ":" + tiles[i][j].y);
             temp = tiles[i][j].texture;
             temp.x = tiles[i][j].x;
@@ -123,7 +129,7 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
     var overY = randomtile;
     var path;
     //draw first tile
-    tiles[overX][overY] = new TileTdProto(overX * xsize, overY * ysize, "path", textures[1].clone(), "");
+    tiles[overX][overY] = new TileTdProto(overX * xsize, overY * ysize, TilesEnum.PATH, textures[1].clone(), "");
     path = tiles[overX][overY].texture;
     path.x = overX * xsize;
     path.y = overY * ysize;
@@ -151,11 +157,11 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
             tempdownchance = downchance;
 
             //disable up
-            if (overY - 1 <= 1 || tiles[overX][overY - 1].tiletype === "path" || checkUpLeft(tiles, overX, overY)) {
+            if (overY - 1 <= 1 || tiles[overX][overY - 1].tiletype === TilesEnum.PATH || checkUpLeft(tiles, overX, overY)) {
                 temptopchance = 0;
             }
             //disable down
-            if (overY + 1 >= m - 2 || tiles[overX][overY + 1].tiletype === "path" || checkDownLeft(tiles, overX, overY)) {
+            if (overY + 1 >= m - 2 || tiles[overX][overY + 1].tiletype === TilesEnum.PATH || checkDownLeft(tiles, overX, overY)) {
                 tempdownchance = 0;
             }
 
@@ -174,7 +180,6 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
                     temptopchance += 100 - (temprightchance + temptopchance);
                 }
             }
-            console.log("temptopchance: " + temptopchance + "; temprightchance: " + temprightchance + "; tempdownchance: " + tempdownchance);
             dirandom = randomIntFromInterval(1, 100);
             if (dirandom <= temptopchance) {//TODO make 33, 66 and 100 variable controlled
                 direction = 0;
@@ -192,21 +197,18 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
         switch(direction) {//MOVE TILE
             case 0:
                 overY -= 1;
-                console.log("Going from " + oldX + ":" + oldY + " up to " + overX + ":" + overY);
                 break;
             case 2:
                 overY += 1;
-                console.log("Going from " + oldX + ":" + oldY + " down to " + overX + ":" + overY);
                 break;
             case 1:
                 overX += 1;
-                console.log("Going from " + oldX + ":" + oldY + " right to " + overX + ":" + overY);
                 break;
             default:
                 overX +=1;
         }
         tiles[oldX][oldY].next = overX + ":" + overY;//chain the path tiles together
-        tiles[overX][overY].tiletype = "path";
+        tiles[overX][overY].tiletype = TilesEnum.PATH;
         //TODO get texture rotation according to direction
         path = textures[1].clone();
         path.x = overX * xsize;
@@ -222,9 +224,9 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
     var etcTile;
     for (i = 0; i < n; i += 1) {
         for (j = 0; j < m; j += 1) {
-            if (tiles[i][j].tiletype !== "path") {
+            if (tiles[i][j].tiletype !== TilesEnum.PATH) {
                 if (randomIntFromInterval(1, 100) < etcTileChance) {
-                    tiles[i][j] = new TileTdProto(i * xsize, j * ysize, "etc", textures[randomIntFromInterval(7, 9)].clone(), "");
+                    tiles[i][j] = new TileTdProto(i * xsize, j * ysize, TilesEnum.ETC, textures[randomIntFromInterval(7, 9)].clone(), "");
                     etcTile = tiles[i][j].texture;
                     etcTile.x = i * xsize;
                     etcTile.y = j * ysize;
@@ -234,13 +236,12 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
         }
     }
 
-    console.log(tiles);
+    //console.log(tiles);
 
     overlaytiles.forEach(function (element) {
         stage.addChild(element);
     });
     stage.update();
-    //console.log("I shoud generate " + n + " by " + m + " large array with " + entrances + " entrances and " + exits + " exits!");
 
 }
 function generateBoILevel(n, m, stage, textures, xsize, ysize) {
@@ -254,30 +255,37 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
     var doorw = $("input[name='doorw']:checked").val();
     var tiles = getTilesArray(n, m);
     var i, j;
-    var tiletexture, walkable, doorncheck, doorecheck, doorscheck, doorwcheck, temp;
+    var tiletype, doorncheck, doorecheck, doorscheck, doorwcheck, temp;
     for (i = 0; i < n; i += 1) {
         for (j = 0; j < m; j += 1) {
-            walkable = true;
             if (i === 0 || j === 0 || i === n - 1 || j === m - 1) {
-                doorncheck = (i === Math.floor(n / 2) && j === 0) && doorn === 'true';
-                doorecheck = (i === 0 && j === Math.floor(m / 2)) && doore === 'true';
-                doorscheck = (i === Math.floor(n / 2) && j === m - 1) && doors === 'true';
-                doorwcheck = (i === n - 1 && j === Math.floor(m / 2)) && doorw === 'true';
+                doorncheck = (doorn === "true") && (i === Math.floor(n / 2) && j === 0);
+                doorecheck = (doorw === "true") && (i === 0 && j === Math.floor(m / 2));
+                doorscheck = (doors === "true") && (i === Math.floor(n / 2) && j === m - 1);
+                doorwcheck = (doore === "true") && (i === n - 1 && j === Math.floor(m / 2));
                 if (doorncheck || doorecheck || doorscheck || doorwcheck) {
-                    tiletexture = doortexture.clone();
+                    tiletype = 1;
                 } else {
-                    tiletexture = walltexture.clone();
-                    walkable = false;
+                    tiletype = 2;
                 }
             } else {
-                tiletexture = floortexture.clone();
+                tiletype = 0;
             }
-            tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, "", tiletexture, "", walkable);
+            switch (tiletype) {
+                case 0:
+                    tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, "basic", floortexture.clone(), "");
+                    break;
+                case 1:
+                    tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, "door", doortexture.clone(), "");
+                    break;
+                case 2:
+                    tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, "wall", walltexture.clone(), "");
+                    break;
+            }
             temp = tiles[i][j].texture;
             temp.x = tiles[i][j].x;
             temp.y = tiles[i][j].y;
             stage.addChild(temp);
-            stage.update();
         }
     }
     stage.update();
@@ -315,14 +323,15 @@ function generateOwLevel(n, m, stage, textures, xsize, ysize) {
 }
 function generateLevel(which) {
     "use strict";
-    var n = $('#ninput').val();
-    var m = $('#ninput2').val();
+    var n = $("#ninput").val();
+    var m = $("#ninput2").val();
     var canvas = idCanvas(n, m);
     var imgscalex = (canvas.width / n) / 100;
     var imgscaley = (canvas.height / m) / 100;
     var xsize = imgscalex * 100;
     var ysize = imgscaley * 100;
     var stage = new createjs.Stage(canvas);
+    stage.enableMouseOver();
     /**
      * Textures:
      * 0 - grass
@@ -338,7 +347,6 @@ function generateLevel(which) {
      * @type {Array}
      */
     var textures = loadTiles(imgscalex, imgscaley);
-    stage.enableMouseOver();
     switch (which) {
         case 0:
             generateTdLevel(n, m, stage, textures, xsize, ysize);
