@@ -91,6 +91,22 @@ function loadTiles(imgscalex, imgscaley) {
     darkwtexture.scaleX = imgscalex;
     darkwtexture.scaleY = imgscaley;
     textures.push(darkwtexture);
+    var benchtexture = new createjs.Bitmap("res/bench.png");
+    benchtexture.scaleX = imgscalex;
+    benchtexture.scaleY = imgscaley;
+    textures.push(benchtexture);
+    var plant1texture = new createjs.Bitmap("res/plant1.png");
+    plant1texture.scaleX = imgscalex;
+    plant1texture.scaleY = imgscaley;
+    textures.push(plant1texture);
+    var plant2texture = new createjs.Bitmap("res/plant2.png");
+    plant2texture.scaleX = imgscalex;
+    plant2texture.scaleY = imgscaley;
+    textures.push(plant2texture);
+    var plant3texture = new createjs.Bitmap("res/plant3.png");
+    plant3texture.scaleX = imgscalex;
+    plant3texture.scaleY = imgscaley;
+    textures.push(plant3texture);
     return textures;
 }
 function checkUpLeft(tiles, overx, overy) {
@@ -266,6 +282,8 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
     var tiles = getTilesArray(n, m);
     var i, j;
     var tiletype, doorncheck, doorecheck, doorscheck, doorwcheck, temp;
+
+    //GENERATE TILES
     for (i = 0; i < n; i += 1) {
         for (j = 0; j < m; j += 1) {
             if (i === 0 || j === 0 || i === n - 1 || j === m - 1) {
@@ -298,6 +316,8 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
             stage.addChild(temp);
         }
     }
+
+    //OBSTRUCTIONS
     var generateObstructions = true; //TODO get from html
     var obstructionsPerc = 10;//TODO get from html
     var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
@@ -311,16 +331,13 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
             alert("Could not generate obstructions, try different values of the variables!");
             break;
         }
-
         //TODO >1 type of obstructions and random picker - random rocks, horiz or vert lines of rocks/wall
-
         //START OF DARKNESS GENERATION
         if (n > 7 && m > 7) {//Ensure we have some space
             testtilex = randomIntFromInterval(2, n - 6);//m - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
             testtiley = randomIntFromInterval(2, m - 6);//n - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
             sidesize = Math.floor(Math.sqrt(obstructionsCount));
             if (testtilex + sidesize < n - 2 && testtiley + sidesize < m - 2) { //check bounds
-                console.log("Generating darkness on " + testtilex + ":" + testtiley + " (spooky!)");
                 for (i = 0; i < sidesize; i += 1) {
                     for (j = 0; j < sidesize; j += 1) {
                         if (i === 0 && j === 0) {
@@ -384,6 +401,68 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
         }
     } while (generateObstructions);
 
+
+    //DECORATIONS
+    var generateDecorations = true;//TODO get from HTML
+    var decorationsChance = 80;//TODO get from HTML
+    var temptile;
+    /**
+     * 0 - up (unchanged)
+     * 1 - down
+     * 2 - left
+     * 3 - right
+     */
+    var benchdirection;
+    if (generateDecorations) {
+        for (i = 1; i < n - 1; i += 1) {
+            for (j = 1;  j < m - 1; j += 1) {
+                if (i === 1 || i === n - 2 || j === 1 || j === m - 2) {//ONLY NEXT TO WALLS
+                    if (tiles[i - 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j - 1].tiletype !== TilesEnum.DOOR && tiles[i + 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j + 1].tiletype !== TilesEnum.DOOR) {//NOT NEXT TO DOORS CHECK
+                        if (randomIntFromInterval(1, 100) - (100 - decorationsChance) > 0) {
+                            if (tiles[i][j].tiletype === TilesEnum.BASIC) {
+                                temptile = randomIntFromInterval(11, 14);
+                                tiles[i][j] = new TileRoomProto(i, j, TilesEnum.ETC, textures[temptile].clone());
+                                temp = tiles[i][j].texture;
+                                temp.x = tiles[i][j].x * xsize;
+                                temp.y = tiles[i][j].y * ysize;
+                                if (temptile === 11) {
+                                    benchdirection = 0;//default
+                                    if (i === 1 && j > 1) {
+                                        benchdirection = 2;
+                                    } else if (i === n - 2 && j > 1) {
+                                        benchdirection = 3;
+                                    } else if (j === 1 && i > 1) {
+                                        benchdirection = 0;
+                                    } else if (j === m - 2 && i > 1) {
+                                        benchdirection = 1;
+                                    }
+                                    switch (benchdirection) {
+                                        case 1:
+                                            temp.regX = temp.image.width;
+                                            temp.regY = temp.image.height;
+                                            temp.rotation = 180;
+                                            break;
+                                        case 2:
+                                            temp.regX = temp.image.width;
+                                            temp.regY = 0;
+                                            temp.rotation = 270;
+                                            break;
+                                        case 3:
+                                            temp.regX = 0;
+                                            temp.regY = temp.image.height;
+                                            temp.rotation = 90;
+                                            break;
+                                    }
+                                }
+                                stage.addChild(temp);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     stage.update();
     //TODO
 }
@@ -445,6 +524,10 @@ function generateLevel(which) {
      * 8 - tree2
      * 9 - tree3
      * 10 - darkness wall
+     * 11 - bench
+     * 12 - plant1
+     * 13 - plant2
+     * 14 - plant3
      * @type {Array}
      */
     var textures = loadTiles(imgscalex, imgscaley);
