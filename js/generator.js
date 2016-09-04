@@ -267,14 +267,82 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
     stage.update();
 
 }
+function generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, textures) {
+    "use strict";
+    var darktexture = textures[4];
+    var darkctexture = textures[5];
+    var darkwtexture = textures[10];
+    var generateMore = true;
+    var testtilex, testtiley, temptexture, temptype, temp;
+    var sidesize, i, j;
+    testtilex = randomIntFromInterval(2, n - 6);//m - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
+    testtiley = randomIntFromInterval(2, m - 6);//n - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
+    sidesize = Math.floor(Math.sqrt(obstructionsCount));
+    if (testtilex + sidesize < n - 2 && testtiley + sidesize < m - 2) { //check bounds
+        for (i = 0; i < sidesize; i += 1) {
+            for (j = 0; j < sidesize; j += 1) {
+                if (i === 0 && j === 0) {
+                    temptype = TilesEnum.DARKC;
+                    temptexture = darkctexture.clone();
+                } else if (i === sidesize - 1 && j === 0) {
+                    temptype = TilesEnum.DARKC;
+                    temptexture = darkctexture.clone();
+                    temptexture.regX = 0;
+                    temptexture.regY = temptexture.image.height;
+                    temptexture.rotation = 90;
+                } else if (i === 0 && j === sidesize - 1) {
+                    temptype = TilesEnum.DARKC;
+                    temptexture = darkctexture.clone();
+                    temptexture.regX = temptexture.image.width;
+                    temptexture.regY = 0;
+                    temptexture.rotation = 270;
+                } else if (i === sidesize - 1 && j === sidesize - 1) {
+                    temptype = TilesEnum.DARKC;
+                    temptexture = darkctexture.clone();
+                    temptexture.regX = temptexture.image.width;
+                    temptexture.regY = temptexture.image.height;
+                    temptexture.rotation = 180;
+                } else if (i === 0) {
+                    temptype = TilesEnum.DARKW;
+                    temptexture = darkwtexture.clone();
+                    temptexture.regX = temptexture.image.width;
+                    temptexture.regY = 0;
+                    temptexture.rotation = 270;
+                } else if (j === 0) {
+                    temptype = TilesEnum.DARKW;
+                    temptexture = darkwtexture.clone();
+                } else if (j === sidesize - 1) {
+                    temptype = TilesEnum.DARKW;
+                    temptexture = darkwtexture.clone();
+                    temptexture.regX = temptexture.image.width;
+                    temptexture.regY = temptexture.image.height;
+                    temptexture.rotation = 180;
+                } else if (i === sidesize - 1) {
+                    temptype = TilesEnum.DARKW;
+                    temptexture = darkwtexture.clone();
+                    temptexture.regX = 0;
+                    temptexture.regY = temptexture.image.height;
+                    temptexture.rotation = 90;
+                } else {
+                    temptype = TilesEnum.DARK;
+                    temptexture = darktexture.clone();
+                }
+                tiles[testtilex + i][testtiley + j] = new TileRoomProto(testtilex + i, testtiley + j, temptype, temptexture);
+                temp = tiles[testtilex + i][testtiley + j].texture;
+                temp.x = tiles[testtilex + i][testtiley + j].x * xsize;
+                temp.y = tiles[testtilex + i][testtiley + j].y * ysize;
+                stage.addChild(temp);
+            }
+        }
+        generateMore = false;
+    } //retry if out of bounds
+    return generateMore;
+}
 function generateBoILevel(n, m, stage, textures, xsize, ysize) {
     "use strict";
     var floortexture = textures[2];
     var walltexture = textures[3];
     var doortexture = textures[6];
-    var darktexture = textures[4];
-    var darkctexture = textures[5];
-    var darkwtexture = textures[10];
     var doorn = $("input[name='doorn']:checked").val();
     var doore = $("input[name='doore']:checked").val();
     var doors = $("input[name='doors']:checked").val();
@@ -321,8 +389,7 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
     var generateObstructions = true; //TODO get from html
     var obstructionsPerc = 10;//TODO get from html
     var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
-    var testtilex, testtiley, temptexture, temptype;
-    var sidesize;
+
     var maxtriescount = 0;
     do {
         maxtriescount += 1;
@@ -334,67 +401,7 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
         //TODO >1 type of obstructions and random picker - random rocks, horiz or vert lines of rocks/wall
         //START OF DARKNESS GENERATION
         if (n > 7 && m > 7) {//Ensure we have some space
-            testtilex = randomIntFromInterval(2, n - 6);//m - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
-            testtiley = randomIntFromInterval(2, m - 6);//n - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
-            sidesize = Math.floor(Math.sqrt(obstructionsCount));
-            if (testtilex + sidesize < n - 2 && testtiley + sidesize < m - 2) { //check bounds
-                for (i = 0; i < sidesize; i += 1) {
-                    for (j = 0; j < sidesize; j += 1) {
-                        if (i === 0 && j === 0) {
-                            temptype = TilesEnum.DARKC;
-                            temptexture = darkctexture.clone();
-                        } else if (i === sidesize - 1 && j === 0) {
-                            temptype = TilesEnum.DARKC;
-                            temptexture = darkctexture.clone();
-                            temptexture.regX = 0;
-                            temptexture.regY = temptexture.image.height;
-                            temptexture.rotation = 90;
-                        } else if (i === 0 && j === sidesize - 1) {
-                            temptype = TilesEnum.DARKC;
-                            temptexture = darkctexture.clone();
-                            temptexture.regX = temptexture.image.width;
-                            temptexture.regY = 0;
-                            temptexture.rotation = 270;
-                        } else if (i === sidesize - 1 && j === sidesize - 1) {
-                            temptype = TilesEnum.DARKC;
-                            temptexture = darkctexture.clone();
-                            temptexture.regX = temptexture.image.width;
-                            temptexture.regY = temptexture.image.height;
-                            temptexture.rotation = 180;
-                        } else if (i === 0) {
-                            temptype = TilesEnum.DARKW;
-                            temptexture = darkwtexture.clone();
-                            temptexture.regX = temptexture.image.width;
-                            temptexture.regY = 0;
-                            temptexture.rotation = 270;
-                        } else if (j === 0) {
-                            temptype = TilesEnum.DARKW;
-                            temptexture = darkwtexture.clone();
-                        } else if (j === sidesize - 1) {
-                            temptype = TilesEnum.DARKW;
-                            temptexture = darkwtexture.clone();
-                            temptexture.regX = temptexture.image.width;
-                            temptexture.regY = temptexture.image.height;
-                            temptexture.rotation = 180;
-                        } else if (i === sidesize - 1) {
-                            temptype = TilesEnum.DARKW;
-                            temptexture = darkwtexture.clone();
-                            temptexture.regX = 0;
-                            temptexture.regY = temptexture.image.height;
-                            temptexture.rotation = 90;
-                        } else {
-                            temptype = TilesEnum.DARK;
-                            temptexture = darktexture.clone();
-                        }
-                        tiles[testtilex + i][testtiley + j] = new TileRoomProto(testtilex + i, testtiley + j, temptype, temptexture);
-                        temp = tiles[testtilex + i][testtiley + j].texture;
-                        temp.x = tiles[testtilex + i][testtiley + j].x * xsize;
-                        temp.y = tiles[testtilex + i][testtiley + j].y * ysize;
-                        stage.addChild(temp);
-                    }
-                }
-                generateObstructions = false;
-            } //retry if out of bounds
+            generateObstructions = generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, textures);
             //END OF DARKNESS GENERATION
         } else {//Quit if we're not generating
             generateObstructions = false;
