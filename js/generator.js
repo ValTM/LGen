@@ -338,6 +338,57 @@ function generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, t
     } //retry if out of bounds
     return generateMore;
 }
+function generateDecorations(n, m, tiles, decorationsChance, textures, xsize, ysize, stage) {
+    "use strict";
+    var i, j, temptile, temp, benchdirection;
+    for (i = 1; i < n - 1; i += 1) {
+        for (j = 1; j < m - 1; j += 1) {
+            if (i === 1 || i === n - 2 || j === 1 || j === m - 2) {//ONLY NEXT TO WALLS
+                if (tiles[i - 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j - 1].tiletype !== TilesEnum.DOOR && tiles[i + 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j + 1].tiletype !== TilesEnum.DOOR) {//NOT NEXT TO DOORS CHECK
+                    if (randomIntFromInterval(1, 100) - (100 - decorationsChance) > 0) {
+                        if (tiles[i][j].tiletype === TilesEnum.BASIC) {
+                            temptile = randomIntFromInterval(11, 14);
+                            tiles[i][j] = new TileRoomProto(i, j, TilesEnum.ETC, textures[temptile].clone());
+                            temp = tiles[i][j].texture;
+                            temp.x = tiles[i][j].x * xsize;
+                            temp.y = tiles[i][j].y * ysize;
+                            if (temptile === 11) {
+                                benchdirection = 0;//default
+                                if (i === 1 && j > 1) {
+                                    benchdirection = 2;
+                                } else if (i === n - 2 && j > 1) {
+                                    benchdirection = 3;
+                                } else if (j === 1 && i > 1) {
+                                    benchdirection = 0;
+                                } else if (j === m - 2 && i > 1) {
+                                    benchdirection = 1;
+                                }
+                                switch (benchdirection) {
+                                    case 1:
+                                        temp.regX = temp.image.width;
+                                        temp.regY = temp.image.height;
+                                        temp.rotation = 180;
+                                        break;
+                                    case 2:
+                                        temp.regX = temp.image.width;
+                                        temp.regY = 0;
+                                        temp.rotation = 270;
+                                        break;
+                                    case 3:
+                                        temp.regX = 0;
+                                        temp.regY = temp.image.height;
+                                        temp.rotation = 90;
+                                        break;
+                                }
+                            }
+                            stage.addChild(temp);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 function generateBoILevel(n, m, stage, textures, xsize, ysize) {
     "use strict";
     var floortexture = textures[2];
@@ -410,7 +461,7 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
 
 
     //DECORATIONS
-    var generateDecorations = true;//TODO get from HTML
+    var generateDecorationsSwitch = true;//TODO get from HTML
     var decorationsChance = 80;//TODO get from HTML
     var temptile;
     /**
@@ -420,54 +471,8 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
      * 3 - right
      */
     var benchdirection;
-    if (generateDecorations) {
-        for (i = 1; i < n - 1; i += 1) {
-            for (j = 1;  j < m - 1; j += 1) {
-                if (i === 1 || i === n - 2 || j === 1 || j === m - 2) {//ONLY NEXT TO WALLS
-                    if (tiles[i - 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j - 1].tiletype !== TilesEnum.DOOR && tiles[i + 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j + 1].tiletype !== TilesEnum.DOOR) {//NOT NEXT TO DOORS CHECK
-                        if (randomIntFromInterval(1, 100) - (100 - decorationsChance) > 0) {
-                            if (tiles[i][j].tiletype === TilesEnum.BASIC) {
-                                temptile = randomIntFromInterval(11, 14);
-                                tiles[i][j] = new TileRoomProto(i, j, TilesEnum.ETC, textures[temptile].clone());
-                                temp = tiles[i][j].texture;
-                                temp.x = tiles[i][j].x * xsize;
-                                temp.y = tiles[i][j].y * ysize;
-                                if (temptile === 11) {
-                                    benchdirection = 0;//default
-                                    if (i === 1 && j > 1) {
-                                        benchdirection = 2;
-                                    } else if (i === n - 2 && j > 1) {
-                                        benchdirection = 3;
-                                    } else if (j === 1 && i > 1) {
-                                        benchdirection = 0;
-                                    } else if (j === m - 2 && i > 1) {
-                                        benchdirection = 1;
-                                    }
-                                    switch (benchdirection) {
-                                        case 1:
-                                            temp.regX = temp.image.width;
-                                            temp.regY = temp.image.height;
-                                            temp.rotation = 180;
-                                            break;
-                                        case 2:
-                                            temp.regX = temp.image.width;
-                                            temp.regY = 0;
-                                            temp.rotation = 270;
-                                            break;
-                                        case 3:
-                                            temp.regX = 0;
-                                            temp.regY = temp.image.height;
-                                            temp.rotation = 90;
-                                            break;
-                                    }
-                                }
-                                stage.addChild(temp);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    if (generateDecorationsSwitch) {
+        generateDecorations(n, m, tiles, decorationsChance, textures, xsize, ysize, stage);
     }
 
     stage.update();
