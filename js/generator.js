@@ -6,7 +6,8 @@ var TilesEnum = {
     DOOR: "DOOR",
     DARK: "DARK",
     DARKW: "DARKW",
-    DARKC: "DARKC"
+    DARKC: "DARKC",
+    STAIR: "STAIR"
 };
 function idCanvas(n, m) {
     "use strict";
@@ -16,12 +17,12 @@ function idCanvas(n, m) {
     canvas.height = (cwidth / n) * m;
     return canvas;
 }
-function getTilesArray(n, m) {
+function getTilesArray(n) {
     "use strict";
-    var tiles = new Array(n);
+    var tiles = [];
     var i;
     for (i = 0; i < n; i += 1) {
-        tiles[i] = new Array(m);
+        tiles[i] = [];
     }
     return tiles;
 }
@@ -107,6 +108,18 @@ function loadTiles(imgscalex, imgscaley) {
     plant3texture.scaleX = imgscalex;
     plant3texture.scaleY = imgscaley;
     textures.push(plant3texture);
+    var rock1texture = new createjs.Bitmap("res/rock1.png");
+    rock1texture.scaleX = imgscalex;
+    rock1texture.scaleY = imgscaley;
+    textures.push(rock1texture);
+    var rock2texture = new createjs.Bitmap("res/rock2.png");
+    rock2texture.scaleX = imgscalex;
+    rock2texture.scaleY = imgscaley;
+    textures.push(rock2texture);
+    var stairstexture = new createjs.Bitmap("res/stairs.png");
+    stairstexture.scaleX = imgscalex;
+    stairstexture.scaleY = imgscaley;
+    textures.push(stairstexture);
     return textures;
 }
 function checkUpLeft(tiles, overx, overy) {
@@ -131,7 +144,7 @@ function generateTdLevel(n, m, stage, textures, xsize, ysize) {
     "use strict";
     var floortexture = textures[0];
     var pathtexture = textures[1];
-    var tiles = getTilesArray(n, m);
+    var tiles = getTilesArray(n);
     var i, j, temp;
     for (i = 0; i < n; i += 1) {
         for (j = 0; j < m; j += 1) {
@@ -338,12 +351,25 @@ function generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, t
     } //retry if out of bounds
     return generateMore;
 }
-function generateDecorations(n, m, tiles, decorationsChance, textures, xsize, ysize, stage) {
+function generateDecorationsExt(n, m, tiles, decorationsChance, textures, xsize, ysize, stage, walln, walls, wallw, walle, generateByWalls) {
     "use strict";
-    var i, j, temptile, temp, benchdirection;
+    /**
+     * 0 - up (unchanged)
+     * 1 - down
+     * 2 - left
+     * 3 - right
+     */
+    var benchdirection;
+    var i, j, temptile, temp;
+    var check;
     for (i = 1; i < n - 1; i += 1) {
         for (j = 1; j < m - 1; j += 1) {
-            if (i === 1 || i === n - 2 || j === 1 || j === m - 2) {//ONLY NEXT TO WALLS
+            if (generateByWalls === true) {
+                check = (i === 1 && wallw) || (i === n - 2 && walle) || (j === 1 && walln) || (j === m - 2 && walls);
+            } else {
+                check = i === 1 || i === n - 2 || j === 1 || j === m - 2;
+            }
+            if (check) {//ONLY NEXT TO WALLS
                 if (tiles[i - 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j - 1].tiletype !== TilesEnum.DOOR && tiles[i + 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j + 1].tiletype !== TilesEnum.DOOR) {//NOT NEXT TO DOORS CHECK
                     if (randomIntFromInterval(1, 100) - (100 - decorationsChance) > 0) {
                         if (tiles[i][j].tiletype === TilesEnum.BASIC) {
@@ -389,6 +415,70 @@ function generateDecorations(n, m, tiles, decorationsChance, textures, xsize, ys
         }
     }
 }
+function generateDecorations(n, m, tiles, decorationsChance, textures, xsize, ysize, stage) {
+    "use strict";
+    generateDecorationsExt(n, m, tiles, decorationsChance, textures, xsize, ysize, stage, false, false, false, false, false);
+}
+function generateHorizontalObstructions(n, m, tiles, textures, xsize, ysize, stage) {
+    "use strict";
+    var i, j, temp;
+    j = Math.floor(m / 3);
+    for (i = 1; i < n - randomIntFromInterval(3, 5); i += 1) {
+        tiles[i][j] = new TileRoomProto(i, j, TilesEnum.WALL, textures[randomIntFromInterval(15, 16)].clone());
+        temp = tiles[i][j].texture;
+        temp.x = i * xsize;
+        temp.y = j * ysize;
+        stage.addChild(temp);
+    }
+    j = Math.floor(2 * m / 3);
+    for (i = n - 2; i > randomIntFromInterval(2, 5); i -= 1) {
+        tiles[i][j] = new TileRoomProto(i, j, TilesEnum.WALL, textures[randomIntFromInterval(15, 16)].clone());
+        temp = tiles[i][j].texture;
+        temp.x = i * xsize;
+        temp.y = j * ysize;
+        stage.addChild(temp);
+    }
+    return false; //this can not fail
+}
+function generateVerticalObstructions(n, m, tiles, textures, xsize, ysize, stage) {
+    "use strict";
+    var i, j, temp;
+    i = Math.floor(n / 3);
+    for (j = 1; j < m - randomIntFromInterval(3, 5); j += 1) {
+        tiles[i][j] = new TileRoomProto(i, j, TilesEnum.WALL, textures[randomIntFromInterval(15, 16)].clone());
+        temp = tiles[i][j].texture;
+        temp.x = i * xsize;
+        temp.y = j * ysize;
+        stage.addChild(temp);
+    }
+    i = Math.floor(2 * n / 3);
+    for (j = m - 2; j > randomIntFromInterval(2, 5); j -= 1) {
+        tiles[i][j] = new TileRoomProto(i, j, TilesEnum.WALL, textures[randomIntFromInterval(15, 16)].clone());
+        temp = tiles[i][j].texture;
+        temp.x = i * xsize;
+        temp.y = j * ysize;
+        stage.addChild(temp);
+    }
+    return false; //this can not fail
+}
+function generateRandomObstructions(n, m, obstructionsPerc, tiles, textures, xsize, ysize, stage) {
+    "use strict";
+    var i, j, temp;
+    for (i = 1; i < n - 1; i += 1) {
+        for (j = 1; j < m - 1; j += 1) {
+            if (tiles[i - 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j - 1].tiletype !== TilesEnum.DOOR && tiles[i + 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j + 1].tiletype !== TilesEnum.DOOR) {//NOT NEXT TO DOORS CHECK
+                if (randomIntFromInterval(0, 100) < obstructionsPerc) {
+                    tiles[i][j] = new TileRoomProto(i, j, TilesEnum.WALL, textures[randomIntFromInterval(15, 16)].clone());
+                    temp = tiles[i][j].texture;
+                    temp.x = i * xsize;
+                    temp.y = j * ysize;
+                    stage.addChild(temp);
+                }
+            }
+        }
+    }
+    return false;//this can not fail
+}
 function generateBoILevel(n, m, stage, textures, xsize, ysize) {
     "use strict";
     var floortexture = textures[2];
@@ -398,25 +488,25 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
     var doore = $("input[name='doore']:checked").val();
     var doors = $("input[name='doors']:checked").val();
     var doorw = $("input[name='doorw']:checked").val();
-    var tiles = getTilesArray(n, m);
+    var tiles = getTilesArray(n);
     var i, j;
     var tiletype, doorncheck, doorecheck, doorscheck, doorwcheck, temp;
 
     //GENERATE TILES
     for (i = 0; i < n; i += 1) {
         for (j = 0; j < m; j += 1) {
-            if (i === 0 || j === 0 || i === n - 1 || j === m - 1) {
+            if (i === 0 || j === 0 || i === n - 1 || j === m - 1) {//If we're on the walls
                 doorncheck = (doorn === "true") && (i === Math.floor(n / 2) && j === 0);
                 doorecheck = (doorw === "true") && (i === 0 && j === Math.floor(m / 2));
                 doorscheck = (doors === "true") && (i === Math.floor(n / 2) && j === m - 1);
                 doorwcheck = (doore === "true") && (i === n - 1 && j === Math.floor(m / 2));
                 if (doorncheck || doorecheck || doorscheck || doorwcheck) {
-                    tiletype = 1;
+                    tiletype = 1;//DOOR
                 } else {
-                    tiletype = 2;
+                    tiletype = 2;//WALL
                 }
             } else {
-                tiletype = 0;
+                tiletype = 0;//BASIC
             }
             switch (tiletype) {
                 case 0:
@@ -435,48 +525,47 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
             stage.addChild(temp);
         }
     }
+    //END OF TILES
 
-    //OBSTRUCTIONS
+    //GENERATE OBSTRUCTIONS
     var generateObstructions = true; //TODO get from html
     var obstructionsPerc = 10;//TODO get from html
     var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
-
     var maxtriescount = 0;
-    do {
-        maxtriescount += 1;
-        if (maxtriescount >= 5) {
-            generateObstructions = false;
-            alert("Could not generate obstructions, try different values of the variables!");
-            break;
-        }
-        //TODO >1 type of obstructions and random picker - random rocks, horiz or vert lines of rocks/wall
-        //START OF DARKNESS GENERATION
-        if (n > 7 && m > 7) {//Ensure we have some space
-            generateObstructions = generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, textures);
-            //END OF DARKNESS GENERATION
-        } else {//Quit if we're not generating
-            generateObstructions = false;
-        }
-    } while (generateObstructions);
+    if (n > 7 && m > 7) { //ensure we have at least some space
+        do {
+            maxtriescount += 1;
+            if (maxtriescount >= 5) {
+                generateObstructions = false;
+                alert("Could not generate obstructions, try different values of the variables!");
+                break;
+            }
+            switch (randomIntFromInterval(0, 3)) {
+                case 0:
+                    generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles, textures, xsize, ysize, stage);
+                    break;
+                case 1:
+                    generateObstructions = generateVerticalObstructions(n, m, tiles, textures, xsize, ysize, stage);
+                    break;
+                case 2:
+                    generateObstructions = generateHorizontalObstructions(n, m, tiles, textures, xsize, ysize, stage);
+                    break;
+                case 3:
+                    generateObstructions = generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, textures);
+                    break;
+            }
+        } while (generateObstructions);
+    }
+    //END OF OBSTRUCTIONS
 
-
-    //DECORATIONS
+    //GENERATE DECORATIONS
     var generateDecorationsSwitch = true;//TODO get from HTML
     var decorationsChance = 80;//TODO get from HTML
-    var temptile;
-    /**
-     * 0 - up (unchanged)
-     * 1 - down
-     * 2 - left
-     * 3 - right
-     */
-    var benchdirection;
     if (generateDecorationsSwitch) {
         generateDecorations(n, m, tiles, decorationsChance, textures, xsize, ysize, stage);
     }
-
+    //END OF DECORATIONS
     stage.update();
-    //TODO
 }
 function generateOwLevel(n, m, stage, textures, xsize, ysize) {
     "use strict";
@@ -486,27 +575,134 @@ function generateOwLevel(n, m, stage, textures, xsize, ysize) {
     var walle = $("input[name='walle']:checked").val();
     var walls = $("input[name='walls']:checked").val();
     var wallw = $("input[name='wallw']:checked").val();
-    var tiles = getTilesArray(n, m);
-    var i, j, walkable, tiletexture, temp;
+    var tiles = getTilesArray(n);
+    var i, j, tiletexture, temp, tiletype;
+
+    //GENERATE TILES
     for (i = 0; i < n; i += 1) {
         for (j = 0; j < m; j += 1) {
-            walkable = true;
             if ((i === 0 && j === 0) || (i === 0 && j === m - 1) || (i === n - 1 && j === 0) || (i === n - 1 && j === m - 1)) {//TODO add wall checks
-                tiletexture = walltexture.clone();
-                walkable = false;
+                tiletype = 1;
+            } else if (((walln === "true") && j === 0) || ((walle === "true") && i === n -1) || ((wallw === "true") && i === 0) || ((walls === "true") && j === m -1)) {
+                tiletype = 1;
             } else {
-                tiletexture = floortexture.clone();
+                tiletype = 0;
             }
-            tiles[i][j] = new TileRoomProto(i * xsize, j * ysize, "", tiletexture, "", walkable);
+            switch (tiletype) {
+                case 0:
+                    tiletype = TilesEnum.BASIC;
+                    tiletexture = floortexture.clone();
+                    break;
+                case 1:
+                    tiletype = TilesEnum.WALL;
+                    tiletexture = walltexture.clone();
+                    break;
+            }
+            tiles[i][j] = new TileRoomProto(i, j, tiletype, tiletexture);
             temp = tiles[i][j].texture;
-            temp.x = tiles[i][j].x;
-            temp.y = tiles[i][j].y;
+            temp.x = tiles[i][j].x * xsize;
+            temp.y = tiles[i][j].y * ysize;
             stage.addChild(temp);
-            stage.update();
         }
     }
+    //END OF TILES GENERATION
+
+    //GENERATE OBSTRUCTIONS
+    var generateObstructions = true; //TODO get from html
+    var obstructionsPerc = 10;//TODO get from html
+    var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
+    var maxtriescount = 0;
+    if (n > 7 && m > 7) { //ensure we have at least some space
+        do {
+            maxtriescount += 1;
+            if (maxtriescount >= 5) {
+                generateObstructions = false;
+                alert("Could not generate obstructions, try different values of the variables!");
+                break;
+            }
+            if (walln === "true" && walls === "true" && walle === "true" && wallw === "true") { //CLOSED ROOM
+                switch (randomIntFromInterval(0, 3)) {
+                    case 0:
+                        generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles, textures, xsize, ysize, stage);
+                        break;
+                    case 1:
+                        generateObstructions = generateVerticalObstructions(n, m, tiles, textures, xsize, ysize, stage);
+                        break;
+                    case 2:
+                        generateObstructions = generateHorizontalObstructions(n, m, tiles, textures, xsize, ysize, stage);
+                        break;
+                    case 3:
+                        generateObstructions = generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, textures);
+                        break;
+                }
+            } else if (walln === "true" && walls === "true") {
+                switch (randomIntFromInterval(0, 2)) {
+                    case 0:
+                        generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles, textures, xsize, ysize, stage);
+                        break;
+                    case 1:
+                        generateObstructions = generateVerticalObstructions(n, m, tiles, textures, xsize, ysize, stage);
+                        break;
+                    case 2:
+                        generateObstructions = generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, textures);
+                        break;
+                }
+            } else if (wallw === "true" && walle === "true") {
+                switch (randomIntFromInterval(0, 2)) {
+                    case 0:
+                        generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles, textures, xsize, ysize, stage);
+                        break;
+                    case 1:
+                        generateObstructions = generateHorizontalObstructions(n, m, tiles, textures, xsize, ysize, stage);
+                        break;
+                    case 2:
+                        generateObstructions = generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, textures);
+                        break;
+                }
+            } else {
+                switch (randomIntFromInterval(0, 1)) {
+                    case 0:
+                        generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles, textures, xsize, ysize, stage);
+                        break;
+                    case 1:
+                        generateObstructions = generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, textures);
+                        break;
+                }
+            }
+
+
+        } while (generateObstructions);
+    }
+    //END OF OBSTRUCTIONS
+
+    //GENERATE DECORATIONS
+    var generateDecorationsSwitch = true;//TODO get from HTML
+    var decorationsChance = 80;//TODO get from HTML
+    if (generateDecorationsSwitch) {
+        generateDecorationsExt(n, m, tiles, decorationsChance, textures, xsize, ysize, stage, (walln === "true"), (walls === "true"), (wallw === "true"), (walle === "true"), true);
+    }
+    //END OF DECORATIONS
+
+    //STAIRS
+    var generateStairs = true;//TODO get from HTML
+    var tryGen = true;
+    var x, y;
+    if (generateStairs) {
+        while (tryGen) {
+            x = randomIntFromInterval(2, n - 2);
+            y = randomIntFromInterval(2, m - 2);
+            if (tiles[x][y].tiletype === TilesEnum.BASIC) {
+                tiles[x][y] = new TileRoomProto(x, y, TilesEnum.STAIR, textures[17].clone());
+                temp = tiles[x][y].texture;
+                temp.x = tiles[x][y].x * xsize;
+                temp.y = tiles[x][y].y * ysize;
+                stage.addChild(temp);
+                tryGen = false;
+            }
+        }
+    }
+    //END OF STAIRS
     stage.update();
-    //TODO
 }
 function generateLevel(which) {
     "use strict";
@@ -540,6 +736,9 @@ function generateLevel(which) {
      * 12 - plant1
      * 13 - plant2
      * 14 - plant3
+     * 15 - rock1
+     * 16 - rock2
+     * 17 - stairs
      * @type {Array}
      */
     var textures = loadTiles(imgscalex, imgscaley);
