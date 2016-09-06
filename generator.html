@@ -37,6 +37,7 @@
         <input type="text" id="exits" maxlength="1" class="smalltextinput fl" value="1">
         <p class="fl m5pxlr"> exits</p><br>
         <input type="submit" id="tdsubmit" value="Generate" onclick="generateLevel(0)">
+        <input type="submit" value="Export JSON" onclick="exportJSON()">
     </div>
     <!--BoI type inputs-->
     <div id="blk-2" class="toHide" style="display:none;">
@@ -46,6 +47,7 @@
         <p class="fl m5pxlr">Door S: </p><input type="radio" name="doors" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="doors" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
         <p class="fl m5pxlr">Door W: </p><input type="radio" name="doorw" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="doorw" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
         <input type="submit" id="boisubmit" value="Generate" onclick="generateLevel(1)">
+        <input type="submit" value="Export JSON" onclick="exportJSON()">
     </div>
     <!--Open walls type inputs-->
     <div id="blk-3" class="toHide" style="display:none;">
@@ -55,6 +57,7 @@
         <p class="fl m5pxlr">Wall S: </p><input type="radio" name="walls" value="true" class="fl"><p class="fl m5pxlr">Yes </p><input type="radio" name="walls" value="false" class="fl m5pxlr" checked="checked"><p class="fl">No</p><br>
         <p class="fl m5pxlr">Wall W: </p><input type="radio" name="wallw" value="true" class="fl" checked="checked"><p class="fl m5pxlr">Yes </p><input type="radio" name="wallw" value="false" class="fl m5pxlr"><p class="fl">No</p><br>
         <input type="submit" id="orsubmit" value="Generate" onclick="generateLevel(2)">
+        <input type="submit" value="Export JSON" onclick="exportJSON()">
     </div>
 </div>
 <div class="canvasDiv" id="canvasDiv">
@@ -68,5 +71,6 @@
         });
     });
 </script>
+<a id="downloadAnchorElem" style="display:none"></a>
 </body>
 </html>
