@@ -464,10 +464,10 @@ function generateType1Level(stage, requiredData) {
 
     //GENERATE TREE WALLS
     var generateTreeWalls = requiredData.generateTreeWalls;
-    var generateVerticalWalls = requiredData.generateVerticalWalls;
-    var generateForest = requiredData.generateForest;
-    var treewalltexture;
     if (generateTreeWalls) {
+        var generateVerticalWalls = requiredData.generateVerticalWalls;
+        var generateForest = requiredData.generateForest;
+        var treewalltexture;
         treewalltexture = textures[18];
         if (generateForest) {
             for (i = 0; i < n; i += 1) {//EVERYTHING IS FOREST NOW
@@ -550,9 +550,9 @@ function generateType1Level(stage, requiredData) {
 
     //GENERATE DECORATIONS
     var etcSpawn = requiredData.etcSpawn;
-    var etcTileChance = requiredData.etcTileChance;
-    var etcTile;
     if (etcSpawn) {
+        var etcTileChance = requiredData.etcTileChance;
+        var etcTile;
         for (i = 0; i < n; i += 1) {
             for (j = 0; j < m; j += 1) {
                 if (tiles[i][j].tiletype === TilesEnum.BASIC) {
@@ -570,17 +570,21 @@ function generateType1Level(stage, requiredData) {
     //END OF DECORATIONS
 
     stage.update();
-
 }
-function generateType2Level(n, m, stage, textures, xsize, ysize) {
+function generateType2Level(stage, requiredData) {
     "use strict";
+    var n = requiredData.n;
+    var m = requiredData.m;
+    var xsize = requiredData.xsize;
+    var ysize = requiredData.ysize;
+    var textures = requiredData.textures;
     var floortexture = textures[2];
     var walltexture = textures[3];
     var doortexture = textures[6];
-    var doorn = $("input[name='doorn']:checked").val();
-    var doore = $("input[name='doore']:checked").val();
-    var doors = $("input[name='doors']:checked").val();
-    var doorw = $("input[name='doorw']:checked").val();
+    var doorn = requiredData.doorn;
+    var doore = requiredData.doore;
+    var doors = requiredData.doors;
+    var doorw = requiredData.doorw;
     var tiles = getTilesArray(n);
     var i, j;
     var tiletype, doorncheck, doorecheck, doorscheck, doorwcheck, temp;
@@ -621,8 +625,8 @@ function generateType2Level(n, m, stage, textures, xsize, ysize) {
     //END OF TILES
 
     //GENERATE OBSTRUCTIONS
-    var generateObstructions = true; //TODO get from html
-    var obstructionsPerc = 10;//TODO get from html
+    var generateObstructions = requiredData.generateObstructions;
+    var obstructionsPerc = requiredData.obstructionsPerc;
     var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
     var maxtriescount = 0;
     if (n > 7 && m > 7) { //ensure we have at least some space
@@ -652,22 +656,27 @@ function generateType2Level(n, m, stage, textures, xsize, ysize) {
     //END OF OBSTRUCTIONS
 
     //GENERATE DECORATIONS
-    var generateDecorationsSwitch = true;//TODO get from HTML
-    var decorationsChance = 80;//TODO get from HTML
+    var generateDecorationsSwitch = requiredData.generateDecorationsSwitch;
     if (generateDecorationsSwitch) {
+        var decorationsChance = requiredData.decorationsChance;
         generateDecorations(n, m, tiles, decorationsChance, textures, xsize, ysize, stage);
     }
     //END OF DECORATIONS
     stage.update();
 }
-function generateType3Level(n, m, stage, textures, xsize, ysize) {
+function generateType3Level(stage, requiredData) {
     "use strict";
+    var n = requiredData.n;
+    var m = requiredData.m;
+    var textures = requiredData.textures;
+    var xsize = requiredData.xsize;
+    var ysize = requiredData.ysize;
     var floortexture = textures[2];
     var walltexture = textures[3];
-    var walln = $("input[name='walln']:checked").val();
-    var walle = $("input[name='walle']:checked").val();
-    var walls = $("input[name='walls']:checked").val();
-    var wallw = $("input[name='wallw']:checked").val();
+    var walln = requiredData.walln;
+    var walle = requiredData.walle;
+    var walls = requiredData.walls;
+    var wallw = requiredData.wallw;
     var tiles = getTilesArray(n);
     var i, j, tiletexture, temp, tiletype;
 
@@ -701,8 +710,8 @@ function generateType3Level(n, m, stage, textures, xsize, ysize) {
     //END OF TILES GENERATION
 
     //GENERATE OBSTRUCTIONS
-    var generateObstructions = true; //TODO get from html
-    var obstructionsPerc = 10;//TODO get from html
+    var generateObstructions = requiredData.generateObstructions;
+    var obstructionsPerc = requiredData.obstructionsPerc;
     var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
     var maxtriescount = 0;
     if (n > 7 && m > 7) { //ensure we have at least some space
@@ -769,18 +778,21 @@ function generateType3Level(n, m, stage, textures, xsize, ysize) {
     //END OF OBSTRUCTIONS
 
     //GENERATE DECORATIONS
-    var generateDecorationsSwitch = true;//TODO get from HTML
-    var decorationsChance = 80;//TODO get from HTML
+    var generateDecorationsSwitch = requiredData.generateDecorationsSwitch;
     if (generateDecorationsSwitch) {
+        var decorationsChance = requiredData.decorationsChance;
         generateDecorationsExt(n, m, tiles, decorationsChance, textures, xsize, ysize, stage, (walln === "true"), (walls === "true"), (wallw === "true"), (walle === "true"), true);
     }
     //END OF DECORATIONS
 
     //STAIRS
-    var generateStairs = true;//TODO get from HTML
-    var tryGen = true;
-    var x, y;
+    var generateStairs = requiredData.generateStairs;
+    if ((walln === "true") && (walls === "true") && (wallw === "true") && (walle === "true")) { //if all walls are on - we must have an entrance
+        generateStairs = true;
+    }
     if (generateStairs) {
+        var tryGen = true;
+        var x, y;
         while (tryGen) {
             x = randomIntFromInterval(2, n - 2);
             y = randomIntFromInterval(2, m - 2);
@@ -795,6 +807,7 @@ function generateType3Level(n, m, stage, textures, xsize, ysize) {
         }
     }
     //END OF STAIRS
+
     stage.update();
 }
 function generateLevel(which) {
@@ -849,19 +862,50 @@ function generateLevel(which) {
                 generateTreeWalls: true,
                 generateVerticalWalls: true,
                 generateForest: true,
-                etcSpawn : true,
+                etcSpawn: true,
                 etcTileChance: 66,
+                textures: textures,
                 xsize: xsize,
-                ysize: ysize,
-                textures: textures
+                ysize: ysize
             };
             generateType1Level(stage, requiredData);
             break;
         case 1:
-            generateType2Level(n, m, stage, textures, xsize, ysize);
+            requiredData = {
+                n: n,
+                m: m,
+                doorn: $("input[name='doorn']:checked").val(),
+                doore: $("input[name='doore']:checked").val(),
+                doors: $("input[name='doors']:checked").val(),
+                doorw: $("input[name='doorw']:checked").val(),
+                generateObstructions: true,
+                obstructionsPerc: 10,
+                generateDecorationsSwitch: true,
+                decorationsChance: 80,
+                textures: textures,
+                xsize: xsize,
+                ysize: ysize
+            };
+            generateType2Level(stage, requiredData);
             break;
         case 2:
-            generateType3Level(n, m, stage, textures, xsize, ysize);
+            requiredData = {
+                n: n,
+                m: m,
+                walln: $("input[name='walln']:checked").val(),
+                walle: $("input[name='walle']:checked").val(),
+                walls: $("input[name='walls']:checked").val(),
+                wallw: $("input[name='wallw']:checked").val(),
+                generateObstructions: true,
+                obstructionsPerc: 10,
+                generateDecorationsSwitch: true,
+                decorationsChance: 80,
+                generateStairs: true,
+                textures: textures,
+                xsize: xsize,
+                ysize: ysize
+            };
+            generateType3Level(stage, requiredData);
             break;
     }
 }
