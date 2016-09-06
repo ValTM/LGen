@@ -120,6 +120,10 @@ function loadTiles(imgscalex, imgscaley) {
     stairstexture.scaleX = imgscalex;
     stairstexture.scaleY = imgscaley;
     textures.push(stairstexture);
+    var treewalltexture = new createjs.Bitmap("res/treewall.png");
+    treewalltexture.scaleX = imgscalex;
+    treewalltexture.scaleY = imgscaley;
+    textures.push(treewalltexture);
     return textures;
 }
 function checkUpLeft(tiles, overx, overy) {
@@ -139,146 +143,6 @@ function checkDownLeft(tiles, overx, overy) {
         }
     }
     return false;
-}
-function generateTdLevel(n, m, stage, textures, xsize, ysize) {
-    "use strict";
-    var floortexture = textures[0];
-    var pathtexture = textures[1];
-    var tiles = getTilesArray(n);
-    var i, j, temp;
-    for (i = 0; i < n; i += 1) {
-        for (j = 0; j < m; j += 1) {
-            tiles[i][j] = new TileTdProto(i, j, TilesEnum.BASIC, floortexture.clone(), "");
-            //console.log("Adding tile[" + i + "][" + j + "] with coords " + tiles[i][j].x + ":" + tiles[i][j].y);
-            temp = tiles[i][j].texture;
-            temp.x = tiles[i][j].x * xsize;
-            temp.y = tiles[i][j].y * ysize;
-            stage.addChild(temp);
-        }
-    }
-    //stage.addChild(grasstile);
-    var overlaytiles = [];
-    var randomtile = randomIntFromInterval(2, (m - 1) - 2); //m-1 since we're 0 based
-    var dirandom, oldX, oldY;
-    var generatePath = true;
-    var overX = 0;
-    var overY = randomtile;
-    var path;
-    //draw first tile
-    tiles[overX][overY] = new TileTdProto(overX, overY, TilesEnum.PATH, pathtexture.clone(), "");
-    path = tiles[overX][overY].texture;
-    path.x = tiles[overX][overY].x * xsize;
-    path.y = tiles[overX][overY].y * ysize;
-    overlaytiles.push(path);
-
-    //TODO get from html
-    var topchance = 33;
-    var rightchance = 33;
-    var downchance = 34;
-    var temptopchance, temprightchance, tempdownchance;
-    /**(
-     * 0 = up
-     * 1 = right
-     * 2 = down
-     * @type {number}
-     */
-    var direction = 0;
-    do {
-        //CALCULATE DIRECTION
-        if (overX === 0 || overX === n - 2) {//FIRST OR LAST TILE DIRECTION = RIGHT
-            direction = 1;
-        } else {//CALCULATE DIRECTION BY CHANCE
-            temptopchance = topchance;
-            temprightchance = rightchance;
-            tempdownchance = downchance;
-
-            //disable up
-            if (overY - 1 <= 1 || tiles[overX][overY - 1].tiletype === TilesEnum.PATH || checkUpLeft(tiles, overX, overY)) {
-                temptopchance = 0;
-            }
-            //disable down
-            if (overY + 1 >= m - 2 || tiles[overX][overY + 1].tiletype === TilesEnum.PATH || checkDownLeft(tiles, overX, overY)) {
-                tempdownchance = 0;
-            }
-
-            if (temptopchance === 0 && tempdownchance !== 0) {
-                temprightchance += Math.floor(topchance / 2);
-                tempdownchance += Math.floor(topchance / 2);
-                if (temprightchance + tempdownchance < 100) {
-                    tempdownchance += 100 - (temprightchance + tempdownchance);
-                }
-            } else if (temptopchance === 0 && tempdownchance === 0) {
-                temprightchance = 100;
-            } else if (temptopchance !== 0 && tempdownchance === 0) {
-                temprightchance += Math.floor(downchance / 2);
-                temptopchance += Math.floor(downchance / 2);
-                if (temprightchance + temptopchance < 100) {
-                    temptopchance += 100 - (temprightchance + temptopchance);
-                }
-            }
-            dirandom = randomIntFromInterval(1, 100);
-            if (dirandom <= temptopchance) {//TODO make 33, 66 and 100 variable controlled
-                direction = 0;
-            } else if (dirandom <= temptopchance + temprightchance) {
-                direction = 1;
-            } else if (dirandom <= temptopchance + temprightchance + tempdownchance) {
-                direction = 2;
-            } else {//can not happen, safety code.
-                direction = 0;
-            }
-        }//END OF DIRECTION CALCULATION
-
-        oldX = overX;
-        oldY = overY;
-        switch(direction) {//MOVE TILE
-            case 0:
-                overY -= 1;
-                break;
-            case 2:
-                overY += 1;
-                break;
-            case 1:
-                overX += 1;
-                break;
-            default:
-                overX +=1;
-        }
-        tiles[oldX][oldY].next = overX + ":" + overY;//chain the path tiles together
-        tiles[overX][overY].tiletype = TilesEnum.PATH;
-        //TODO get texture rotation according to direction
-        path = textures[1].clone();
-        path.x = tiles[overX][overY].x * xsize;
-        path.y = tiles[overX][overY].y * ysize;
-        overlaytiles.push(path);
-        if (overX === n - 1) {
-            generatePath = false;
-        }
-    } while (generatePath);
-
-    //TODO Yes/no etc spawn
-    var etcTileChance = 66; //TODO get from HTML;
-    var etcTile;
-    for (i = 0; i < n; i += 1) {
-        for (j = 0; j < m; j += 1) {
-            if (tiles[i][j].tiletype !== TilesEnum.PATH) {
-                if (randomIntFromInterval(1, 100) < etcTileChance) {
-                    tiles[i][j] = new TileTdProto(i, j, TilesEnum.ETC, textures[randomIntFromInterval(7, 9)].clone(), "");
-                    etcTile = tiles[i][j].texture;
-                    etcTile.x = tiles[i][j].x * xsize;
-                    etcTile.y = tiles[i][j].y * ysize;
-                    overlaytiles.push(etcTile);
-                }
-            }
-        }
-    }
-
-    //console.log(tiles);
-
-    overlaytiles.forEach(function (element) {
-        stage.addChild(element);
-    });
-    stage.update();
-
 }
 function generateDarkness(n, m, obstructionsCount, tiles, xsize, ysize, stage, textures) {
     "use strict";
@@ -479,7 +343,236 @@ function generateRandomObstructions(n, m, obstructionsPerc, tiles, textures, xsi
     }
     return false;//this can not fail
 }
-function generateBoILevel(n, m, stage, textures, xsize, ysize) {
+function generateType1Level(stage, requiredData) {
+    "use strict";
+    var textures = requiredData.textures;
+    var n = requiredData.n;
+    var m = requiredData.m;
+    var xsize = requiredData.xsize;
+    var ysize = requiredData.ysize;
+    var floortexture = textures[0];
+    var pathtexture = textures[1];
+    var tiles = getTilesArray(n);
+    var i, j, temp;
+
+    //GENERATE TILES
+    for (i = 0; i < n; i += 1) {
+        for (j = 0; j < m; j += 1) {
+            tiles[i][j] = new TileTdProto(i, j, TilesEnum.BASIC, floortexture.clone(), "");
+            temp = tiles[i][j].texture;
+            temp.x = tiles[i][j].x * xsize;
+            temp.y = tiles[i][j].y * ysize;
+            stage.addChild(temp);
+        }
+    }
+
+    var dirandom, oldX, oldY;
+    var generatePath = true;
+    var overX = 0;
+    var overY = requiredData.overY;
+    var path;
+
+    //draw first tile
+    tiles[overX][overY] = new TileTdProto(overX, overY, TilesEnum.PATH, pathtexture.clone(), "");
+    path = tiles[overX][overY].texture;
+    path.x = tiles[overX][overY].x * xsize;
+    path.y = tiles[overX][overY].y * ysize;
+    stage.addChild(path);
+
+    var topchance = requiredData.topchance;
+    var rightchance = requiredData.rightchance;
+    var downchance = requiredData.downchance;
+    var temptopchance, temprightchance, tempdownchance;
+    /**(
+     * 0 = up
+     * 1 = right
+     * 2 = down
+     * @type {number}
+     */
+    var direction = 0;
+    do {
+        //CALCULATE DIRECTION
+        if (overX === 0 || overX === n - 2) {//FIRST OR LAST TILE DIRECTION = RIGHT
+            direction = 1;
+        } else {//CALCULATE DIRECTION BY CHANCE
+            temptopchance = topchance;
+            temprightchance = rightchance;
+            tempdownchance = downchance;
+
+            //disable up
+            if (overY - 1 <= 1 || tiles[overX][overY - 1].tiletype === TilesEnum.PATH || checkUpLeft(tiles, overX, overY)) {
+                temptopchance = 0;
+            }
+            //disable down
+            if (overY + 1 >= m - 2 || tiles[overX][overY + 1].tiletype === TilesEnum.PATH || checkDownLeft(tiles, overX, overY)) {
+                tempdownchance = 0;
+            }
+
+            if (temptopchance === 0 && tempdownchance !== 0) {
+                temprightchance += Math.floor(topchance / 2);
+                tempdownchance += Math.floor(topchance / 2);
+                if (temprightchance + tempdownchance < 100) {
+                    tempdownchance += 100 - (temprightchance + tempdownchance);
+                }
+            } else if (temptopchance === 0 && tempdownchance === 0) {
+                temprightchance = 100;
+            } else if (temptopchance !== 0 && tempdownchance === 0) {
+                temprightchance += Math.floor(downchance / 2);
+                temptopchance += Math.floor(downchance / 2);
+                if (temprightchance + temptopchance < 100) {
+                    temptopchance += 100 - (temprightchance + temptopchance);
+                }
+            }
+            dirandom = randomIntFromInterval(1, 100);
+            if (dirandom <= temptopchance) {
+                direction = 0;
+            } else if (dirandom <= temptopchance + temprightchance) {
+                direction = 1;
+            } else if (dirandom <= temptopchance + temprightchance + tempdownchance) {
+                direction = 2;
+            } else {//can not happen, safety code.
+                direction = 0;
+            }
+        }//END OF DIRECTION CALCULATION
+
+        oldX = overX;
+        oldY = overY;
+        switch(direction) {//MOVE TILE
+            case 0:
+                overY -= 1;
+                break;
+            case 2:
+                overY += 1;
+                break;
+            case 1:
+                overX += 1;
+                break;
+            default:
+                overX +=1;
+        }
+        tiles[oldX][oldY].next = overX + ":" + overY;//chain the path tiles together
+        tiles[overX][overY].tiletype = TilesEnum.PATH;
+        path = textures[1].clone();
+        path.x = tiles[overX][overY].x * xsize;
+        path.y = tiles[overX][overY].y * ysize;
+        stage.addChild(path);
+        if (overX === n - 1) {
+            generatePath = false;
+        }
+    } while (generatePath);
+    //END OF TILES CREATION
+
+    //GENERATE TREE WALLS
+    var generateTreeWalls = requiredData.generateTreeWalls;
+    var generateVerticalWalls = requiredData.generateVerticalWalls;
+    var generateForest = requiredData.generateForest;
+    var treewalltexture;
+    if (generateTreeWalls) {
+        treewalltexture = textures[18];
+        if (generateForest) {
+            for (i = 0; i < n; i += 1) {//EVERYTHING IS FOREST NOW
+                for (j = 0; j < m; j += 1) {
+                    if (tiles[i][j].tiletype !== TilesEnum.PATH) {
+                        tiles[i][j].tiletype = TilesEnum.WALL;
+                    }
+                }
+            }
+            for (i = 0; i < n; i += 1) {//CLEAR AROUND THE PATH
+                for (j = 0; j < m; j += 1) {
+                    if (tiles[i][j].tiletype === TilesEnum.PATH) {
+                        if (tiles[i][j - 1].tiletype !== TilesEnum.PATH) {//above
+                            tiles[i][j - 1].tiletype = TilesEnum.BASIC;
+                        }
+                        if (tiles[i][j + 1].tiletype !== TilesEnum.PATH) {//below
+                            tiles[i][j + 1].tiletype = TilesEnum.BASIC;
+                        }
+                        if (i - 1 >= 0) {
+                            if (tiles[i - 1][j].tiletype !== TilesEnum.PATH) {//left
+                                tiles[i - 1][j].tiletype = TilesEnum.BASIC;
+                            }
+                        }
+                        if (i + 1 < n) {
+                            if (tiles[i + 1][j].tiletype !== TilesEnum.PATH) {//right
+                                tiles[i + 1][j].tiletype = TilesEnum.BASIC;
+                            }
+                        }
+                        if (i - 1 >= 0 && j - 1 >= 0) {//top left
+                            if (tiles[i - 1][j - 1].tiletype !== TilesEnum.PATH) {
+                                tiles[i - 1][j - 1].tiletype = TilesEnum.BASIC;
+                            }
+                        }
+                        if (i + 1 < n && j - 1 >= 0) {//top right
+                            if (tiles[i + 1][j - 1].tiletype !== TilesEnum.PATH) {
+                                tiles[i + 1][j - 1].tiletype = TilesEnum.BASIC;
+                            }
+                        }
+                        if (i - 1 >= 0 && j + 1 < m) {//bottom left
+                            if (tiles[i - 1][j + 1].tiletype !== TilesEnum.PATH) {
+                                tiles[i - 1][j + 1].tiletype = TilesEnum.BASIC;
+                            }
+                        }
+                        if (i + 1 < n && j + 1 < m) {//bottom right
+                            if (tiles[i + 1][j + 1].tiletype !== TilesEnum.PATH) {
+                                tiles[i + 1][j + 1].tiletype = TilesEnum.BASIC;
+                            }
+                        }
+                    }
+                }
+            }
+            for (i = 0; i < n; i += 1) {
+                for (j = 0; j < m; j += 1) {
+                    if (tiles[i][j].tiletype === TilesEnum.WALL) {
+                        tiles[i][j] = new TileTdProto(i, j, TilesEnum.WALL, treewalltexture.clone(), "");
+                        temp = tiles[i][j].texture;
+                        temp.x = tiles[i][j].x * xsize;
+                        temp.y = tiles[i][j].y * ysize;
+                        stage.addChild(temp);
+                    }
+                }
+            }
+        } else { //GENERATE ONLY WALLS
+            for (i = 0; i < n; i += 1) {
+                for (j = 0; j < m; j += 1) {
+                    if ((i === 0 && generateVerticalWalls) || (i === n - 1 && generateVerticalWalls) || j === 0 || j === m - 1) {
+                        if (tiles[i][j].tiletype === TilesEnum.BASIC) {
+                            tiles[i][j] = new TileTdProto(i, j, TilesEnum.WALL, treewalltexture.clone(), "");
+                            temp = tiles[i][j].texture;
+                            temp.x = tiles[i][j].x * xsize;
+                            temp.y = tiles[i][j].y * ysize;
+                            stage.addChild(temp);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    //END OF TREE WALLS GENERATION
+
+    //GENERATE DECORATIONS
+    var etcSpawn = requiredData.etcSpawn;
+    var etcTileChance = requiredData.etcTileChance;
+    var etcTile;
+    if (etcSpawn) {
+        for (i = 0; i < n; i += 1) {
+            for (j = 0; j < m; j += 1) {
+                if (tiles[i][j].tiletype === TilesEnum.BASIC) {
+                    if (randomIntFromInterval(1, 100) < etcTileChance) {
+                        tiles[i][j] = new TileTdProto(i, j, TilesEnum.ETC, textures[randomIntFromInterval(7, 9)].clone(), "");
+                        etcTile = tiles[i][j].texture;
+                        etcTile.x = tiles[i][j].x * xsize;
+                        etcTile.y = tiles[i][j].y * ysize;
+                        stage.addChild(etcTile);
+                    }
+                }
+            }
+        }
+    }
+    //END OF DECORATIONS
+
+    stage.update();
+
+}
+function generateType2Level(n, m, stage, textures, xsize, ysize) {
     "use strict";
     var floortexture = textures[2];
     var walltexture = textures[3];
@@ -567,7 +660,7 @@ function generateBoILevel(n, m, stage, textures, xsize, ysize) {
     //END OF DECORATIONS
     stage.update();
 }
-function generateOwLevel(n, m, stage, textures, xsize, ysize) {
+function generateType3Level(n, m, stage, textures, xsize, ysize) {
     "use strict";
     var floortexture = textures[2];
     var walltexture = textures[3];
@@ -739,18 +832,36 @@ function generateLevel(which) {
      * 15 - rock1
      * 16 - rock2
      * 17 - stairs
+     * 18 - tree wall
      * @type {Array}
      */
     var textures = loadTiles(imgscalex, imgscaley);
+    var requiredData;
     switch (which) {
         case 0:
-            generateTdLevel(n, m, stage, textures, xsize, ysize);
+            requiredData = {
+                n: n,
+                m: m,
+                overY: randomIntFromInterval(2, (m - 1) - 2),
+                topchance: 33,
+                rightchance: 33,
+                downchance: 34,
+                generateTreeWalls: true,
+                generateVerticalWalls: true,
+                generateForest: true,
+                etcSpawn : true,
+                etcTileChance: 66,
+                xsize: xsize,
+                ysize: ysize,
+                textures: textures
+            };
+            generateType1Level(stage, requiredData);
             break;
         case 1:
-            generateBoILevel(n, m, stage, textures, xsize, ysize);
+            generateType2Level(n, m, stage, textures, xsize, ysize);
             break;
         case 2:
-            generateOwLevel(n, m, stage, textures, xsize, ysize);
+            generateType3Level(n, m, stage, textures, xsize, ysize);
             break;
     }
 }
