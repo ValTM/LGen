@@ -154,7 +154,7 @@
                             <p>ETC Tile Spawn Chance %</p>
                         </td>
                         <td>
-                            <input maxlength="2" type="number" id="etcSpawnChance" class="smalltextinput" value="66">
+                            <input maxlength="2" type="number" id="etcTileChance" class="smalltextinput" value="66">
                         </td>
                     </tr>
                     <tr>
@@ -162,7 +162,7 @@
                             <p>Initial X</p>
                         </td>
                         <td>
-                            <input maxlength="2" type="number" id="overX" class="smalltextinput">
+                            <input maxlength="2" type="number" id="overX" class="smalltextinput morepx">
                         </td>
                     </tr>
                     <tr>
@@ -170,7 +170,7 @@
                             <p>Initial Y</p>
                         </td>
                         <td>
-                            <input maxlength="2" type="number" id="overY" class="smalltextinput">
+                            <input maxlength="2" type="number" id="overY" class="smalltextinput morepx">
                         </td>
                     </tr>
                 </table>
@@ -229,6 +229,8 @@
             $("#blk-" + $(this).val()).show('slow');
         });
     });
+    $("#overX").attr("placeholder", "2 to " + ($("#ninput").val() - 2));
+    $("#overY").attr("placeholder", "2 to " + ($("#minput").val() - 2));
 </script>
 <a id="downloadAnchorElem" style="display:none"></a>
 </body>

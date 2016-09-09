@@ -311,7 +311,6 @@ function calculateDirection(chance1, chance2, chance3, overX, overY, n, m, type)
      * @type number
      */
     var direction = 1;
-
     switch(type) {
         case 0:
             //disable up
@@ -382,6 +381,7 @@ function calculateDirection(chance1, chance2, chance3, overX, overY, n, m, type)
         }
     }
     var dirandom = randomIntFromInterval(1, 100);
+    console.log("Determined chances for tile " + overX + ":" + overY + " are " + tempchance1 + "; " + tempchance2 + "; " + tempchance3 + "; dirandom = " + dirandom);
     if (type === 0 || type === 1) {
         if (dirandom <= tempchance1) {
             direction = type === 0 ? 0 : 1;//UP OR RIGHT
@@ -1047,30 +1047,35 @@ function generateLevel(which) {
     var textures = loadTiles(imgscalex, imgscaley);
     var requiredData;
     var type = parseInt($("input[name=tdtype]:checked").val());
-    var overX, overY;
+    var overX = $("#overX").val();
+    var overY = $("#overY").val();
+    var chance1 = $("#chance1").val();
+    var chance2 = $("#chance2").val();
+    var chance3 = $("#chance3").val();
+    var etcTileChance = $("#etcTileChance").val();
     switch (type) {
         case 0://Horizontal; the leftmost column is 0 to start from the left side
             overX = 0;
-            overY = randomIntFromInterval(2, (m - 1) - 2);
+            overY = overY === "" ? randomIntFromInterval(2, (m - 1) - 2) : overY;
             break;
         case 1://Vertical; the top column is 0 to start from the top side
-            overX = randomIntFromInterval(2, (n - 1) - 2);
+            overX = overX === "" ? randomIntFromInterval(2, (n - 1) - 2) : overX;
             overY = 0;
             break;
         case 2://TOP RIGHT -|; the leftmost column is 0 to start from the left side down
             overX = 0;
-            overY = randomIntFromInterval(2, (m - 1) - 2);
+            overY = overY === "" ? randomIntFromInterval(2, (m - 1) - 2) : overY;
             break;
         case 3://BOTTOM RIGHT _|; the leftmost column is 0 to start from the left side up
             overX = 0;
-            overY = randomIntFromInterval(2, (m - 1) - 2);
+            overY = overY === "" ? randomIntFromInterval(2, (m - 1) - 2) : overY;
             break;
         case 4://BOTTOM LEFT |_; the top column is 0 to start from the top side right
-            overX = randomIntFromInterval(2, (n - 1) - 2);
+            overX = overX === "" ? randomIntFromInterval(2, (n - 1) - 2) : overX;
             overY = 0;
             break;
         case 5://TOP LEFT |-; the top column is 0 to start from the top right
-            overX = randomIntFromInterval(2, (n - 1) - 2);
+            overX = overX === "" ? randomIntFromInterval(2, (n - 1) - 2) : overX;
             overY = 0;
             break;
     }
@@ -1082,15 +1087,15 @@ function generateLevel(which) {
                 type: type,
                 overX: overX,
                 overY: overY,
-                chance1: 33,
-                chance2: 33,
-                chance3: 34,
+                chance1: chance1,
+                chance2: chance2,
+                chance3: chance3,
                 generateTreeWalls: $("input[name=generateTreeWalls]:checked").val() === "true",
                 generateVerticalWalls: $("input[name=generateVerticalWalls]:checked").val() === "true",
                 generateHorizontalWalls: $("input[name=generateHorizontalWalls]:checked").val() === "true",
                 generateForest: $("input[name=generateForest]:checked").val() === "true",
                 etcSpawn: $("input[name=etcSpawn]:checked").val() === "true",
-                etcTileChance: 66
+                etcTileChance: etcTileChance
             };
             tiles = generateType1Level(requiredData);
             break;
