@@ -3,7 +3,7 @@
 <head>
     <link rel="stylesheet" type="text/css" href="css/general.css">
     <script type="application/javascript" src="js/generator.js"></script>
-    <script type="application/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script type="application/javascript" src="lib/jquery-2.2.4.min.js"></script>
     <script type="application/javascript" src="lib/createjs-2015.11.26.min.js"></script>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <title>Level generator</title>
@@ -18,12 +18,12 @@
     <input type="radio" name="toggler" value="3">Open walls room type<br>
 </div>
 <hr>
-<div class="ib m5pxa"><h3>Enter level properties</h3>
-
+<!--Level size-->
+<div class="ib m5pxa"><h3>Enter level size</h3>
     <div>
         <input maxlength="2" type="text" id="ninput" class="smalltextinput fl" value="20">
         <p class="fl m5pxlr">by</p>
-        <input maxlength="2" type="text" id="ninput2" class="smalltextinput fl" value="14">
+        <input maxlength="2" type="text" id="minput" class="smalltextinput fl" value="14">
         <p class="fl m5pxlr">tiles</p>
     </div>
 </div>
@@ -32,10 +32,13 @@
     <!--TD type inputs-->
     <div id="blk-1" class="toHide" style="display:none;">
         <h3>Tower Defense type</h3>
-        <input type="text" id="entrances" maxlength="1" class="smalltextinput fl" value="1">
-        <p class="fl m5pxlr"> entrances</p><br>
-        <input type="text" id="exits" maxlength="1" class="smalltextinput fl" value="1">
-        <p class="fl m5pxlr"> exits</p><br>
+        <p class="fl m5pxlr"> Type </p><br>
+        <input type="radio" name="tdtype" class="fl" value="0" checked="checked"><p>1</p>
+        <input type="radio" name="tdtype" class="fl" value="1"><p>2</p>
+        <input type="radio" name="tdtype" class="fl" value="2"><p>3</p>
+        <input type="radio" name="tdtype" class="fl" value="3"><p>4</p>
+        <input type="radio" name="tdtype" class="fl" value="4"><p>5</p>
+        <input type="radio" name="tdtype" class="fl" value="5"><p>6</p>
         <input type="submit" id="tdsubmit" value="Generate" onclick="generateLevel(0)">
         <input type="submit" value="Export JSON" onclick="exportJSON()">
     </div>

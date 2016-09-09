@@ -22,7 +22,6 @@ function idCanvas(n, m) {
 }
 function getTilesArray(n) {
     "use strict";
-    var tiles = [];
     var i;
     for (i = 0; i < n; i += 1) {
         tiles[i] = [];
@@ -131,18 +130,33 @@ function loadTiles(imgscalex, imgscaley) {
 }
 function checkUpLeft(tiles, overx, overy) {
     "use strict";
-    if (tiles[overx - 1][overy - 1] !== null) {
-        if (tiles[overx - 1][overy - 1].tiletype === TilesEnum.PATH) {
-            return true;
+    if (overx - 1 >= 0 && overy - 1 >= 0) {
+        if (tiles[overx - 1][overy - 1] !== null) {
+            if (tiles[overx - 1][overy - 1].tiletype === TilesEnum.PATH) {
+                return true;
+            }
         }
     }
     return false;
 }
-function checkDownLeft(tiles, overx, overy) {
+function checkUpRight(tiles, overx, overy, n) {
     "use strict";
-    if (tiles[overx - 1][overy + 1] !== null) {
-        if (tiles[overx - 1][overy + 1].tiletype === TilesEnum.PATH) {
-            return true;
+    if (overx + 1 <= n - 1 && overy - 1 >= 0) {
+        if (tiles[overx + 1][overy - 1] !== null) {
+            if (tiles[overx + 1][overy - 1].tiletype === TilesEnum.PATH) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+function checkDownLeft(tiles, overx, overy, m) {
+    "use strict";
+    if (overx - 1 >= 0 && overy + 1 <= m - 1) {
+        if (tiles[overx - 1][overy + 1] !== null) {
+            if (tiles[overx - 1][overy + 1].tiletype === TilesEnum.PATH) {
+                return true;
+            }
         }
     }
     return false;
@@ -280,12 +294,131 @@ function generateRandomObstructions(n, m, obstructionsPerc, tiles) {
     }
     return false;//this can not fail
 }
+function calculateDirection(chance1, chance2, chance3, overX, overY, n, m, type) {
+    "use strict";
+    var tempchance1 = chance1;
+    var tempchance2 = chance2;
+    var tempchance3 = chance3;
+    /**(
+     * 0 = up
+     * 1 = right
+     * 2 = down
+     * 3 = left
+     * @type number
+     */
+    var direction = 1;
+
+    switch(type) {
+        case 0:
+            //disable up
+            if (overY - 1 <= 1 || tiles[overX][overY - 1].tiletype === TilesEnum.PATH || checkUpLeft(tiles, overX, overY)) {
+                tempchance1 = 0;
+            }
+            //disable down
+            if (overY + 1 >= m - 2 || tiles[overX][overY + 1].tiletype === TilesEnum.PATH || checkDownLeft(tiles, overX, overY, m)) {
+                tempchance3 = 0;
+            }
+            break;
+        case 1:
+            //disable left
+            if (overX - 1 <= 1 || tiles[overX - 1][overY].tiletype === TilesEnum.PATH || checkUpLeft(tiles, overX, overY)) {
+                tempchance3 = 0;
+            }
+            //disable right
+            if (overX + 1 >= n - 2 || tiles[overX + 1][overY].tiletype === TilesEnum.PATH || checkUpRight(tiles, overX, overY, n)) {
+                tempchance1 = 0;
+            }
+            break;
+        case 2:
+            //disable right
+            if (overX + 1 >= n - 2) {
+                tempchance1 = 0;
+            }
+            break;
+        case 3:
+            //disable right
+            if (overX + 1 >= n - 2) {
+                tempchance1 = 0;
+            }
+            break;
+        case 4:
+            //disable down
+            if (overY + 1 >= m - 2) {
+                tempchance1 = 0;
+            }
+            break;
+        case 5:
+            //disable up
+            if (overY - 1 <= 1) {
+                tempchance2 = 0;
+            }
+            break;
+    }
+    if (type === 0 || type === 1) {
+        if (tempchance1 === 0 && tempchance3 !== 0) {
+            tempchance2 += Math.floor(chance1 / 2);
+            tempchance3 += Math.floor(chance1 / 2);
+            if (tempchance2 + tempchance3 < 100) {
+                tempchance3 += 100 - (tempchance2 + tempchance3);
+            }
+        } else if (tempchance1 === 0 && tempchance3 === 0) {
+            tempchance2 = 100;
+        } else if (tempchance1 !== 0 && tempchance3 === 0) {
+            tempchance2 += Math.floor(chance3 / 2);
+            tempchance1 += Math.floor(chance3 / 2);
+            if (tempchance2 + tempchance1 < 100) {
+                tempchance1 += 100 - (tempchance2 + tempchance1);
+            }
+        }
+    } else {
+        if (tempchance1 === 0) {
+            tempchance2 = 100;
+        } else if (tempchance2 === 0) {
+            tempchance1 = 100;
+        }
+    }
+    var dirandom = randomIntFromInterval(1, 100);
+    if (type === 0 || type === 1) {
+        if (dirandom <= tempchance1) {
+            direction = type === 0 ? 0 : 1;//UP OR RIGHT
+        } else if (dirandom <= tempchance1 + tempchance2) {
+            direction = type === 0 ? 1 : 2;//RIGHT OR DOWN
+        } else if (dirandom <= tempchance1 + tempchance2 + tempchance3) {
+            direction = type === 0 ? 2 : 3;//DOWN OR LEFT
+        }
+    } else {
+        if (dirandom <= tempchance1) {
+            direction = 1;//RIGHT
+        } else if (dirandom <= tempchance1 + tempchance2) {
+            switch(type) {
+                case 2:
+                case 4:
+                    direction = 2;//DOWN
+                    break;
+                case 3:
+                case 5:
+                    direction = 0;//UP
+                    break;
+            }
+        }
+    }
+    return direction;
+}
 function generateType1Level(requiredData) {
     "use strict";
-    var n = requiredData.n;
-    var m = requiredData.m;
-    var tiles = getTilesArray(n);
+    var n = parseInt(requiredData.n);
+    var m = parseInt(requiredData.m);
+    if (isNaN(n) || n < 9 || isNaN(m) || m < 9) {
+        console.log("Invalid or too small n or m values, supply an integer with at least 9 as its value!");
+        return [];
+    }
+    tiles = getTilesArray(n);
     var i, j;
+    var type = requiredData.type;
+    if (isNaN(type) || type < 0 || type > 5) {
+        console.log("Invalid type! Continuing with default");
+        type = 0;
+    }
 
     //GENERATE TILES
     for (i = 0; i < n; i += 1) {
@@ -294,66 +427,150 @@ function generateType1Level(requiredData) {
         }
     }
 
-    var dirandom, oldX, oldY;
-    var generatePath = true;
-    var overX = 0;
-    var overY = requiredData.overY;
+    var overX = parseInt(requiredData.overX);
+    var overY = parseInt(requiredData.overY);
+    if (isNaN(overX) || overX < 0 || isNaN(overY) || overY < 0) {
+        console.log("Invalid overX or overY values");
+        return [];
+    }
+    switch (type) {
+        case 0:
+        case 2:
+        case 3:
+            overX = 0;
+            if (overY < 2) {
+                overY = 2;
+                console.log("Cannot have value < 2 for overY");
+            }
+            if (overY > m - 2) {
+                overY = m - 2;
+                console.log("Cannot have value > m - 2 for overY");
+            }
+            break;
+        case 1:
+        case 4:
+            overY = 0;
+            if (overX < 2) {
+                overX = 2;
+                console.log("Cannot have value < 2 for overX!");
+            }
+            if (overX > n - 2) {
+                overX = n - 2;
+                console.log("Cannot have value > n - 2 for overX");
+            }
+            break;
+        case 5:
+            overY = m - 1;
+            if (overX < 2) {
+                overX = 2;
+                console.log("Cannot have value < 2 for overX!");
+            }
+            if (overX > n - 2) {
+                overX = n - 2;
+                console.log("Cannot have value > n - 2 for overX");
+            }
+            break;
+    }
+
     //first tile
     tiles[overX][overY] = new TileT1Proto(overX, overY, TilesEnum.PATH, "", 0);
-    var topchance = requiredData.topchance;
-    var rightchance = requiredData.rightchance;
-    var downchance = requiredData.downchance;
-    var temptopchance, temprightchance, tempdownchance;
+
+    //CHANCES INPUT CHECK
+    var chance1 = parseInt(requiredData.chance1);
+    var chance2 = parseInt(requiredData.chance2);
+    var chance3 = parseInt(requiredData.chance3);
+    if (isNaN(chance1) || isNaN(chance2) || isNaN(chance3)) {
+        alert("Invalid chance data! Continuing with default vaules!");
+        chance1 = 33;
+        chance2 = 33;
+        chance3 = 34;
+    }
+    var sum;
+    switch(type) {
+        case 0:
+        case 1:
+            sum = chance1 + chance2 + chance3;
+            if (sum !== 100) {
+                console.log("Invalid 3 chances values!");
+            }
+            if (sum > 100) {
+                chance1 = 33;
+                chance2 = 33;
+                chance3 = 34;
+            } else if (sum < 100) {
+                chance3 = 100 - sum;
+            }
+            break;
+
+        default:
+            sum = (chance1 + chance2);
+            if (sum !== 100) {
+                console.log("Invalid 2 chances values!");
+            }
+            if (sum > 100) {
+                chance1 = 50;
+                chance2 = 50;
+            } else if (sum < 100) {
+                chance2 = 100 - sum;
+            }
+            chance3 = 0;//Chance3 defaults to 0
+    }
+    //END OF CHANCES INPUT CHECK
     /**(
      * 0 = up
      * 1 = right
      * 2 = down
-     * @type {number}
+     * 3 = left
+     * @type number
      */
-    var direction = 0;
+    var direction;
+    var generatePath = true;
+    var oldX, oldY;
     do {
+        direction = -1;//Invalid value for the check later
         //CALCULATE DIRECTION
-        if (overX === 0 || overX === n - 2) {//FIRST OR LAST TILE DIRECTION = RIGHT
-            direction = 1;
-        } else {//CALCULATE DIRECTION BY CHANCE
-            temptopchance = topchance;
-            temprightchance = rightchance;
-            tempdownchance = downchance;
-
-            //disable up
-            if (overY - 1 <= 1 || tiles[overX][overY - 1].tiletype === TilesEnum.PATH || checkUpLeft(tiles, overX, overY)) {
-                temptopchance = 0;
-            }
-            //disable down
-            if (overY + 1 >= m - 2 || tiles[overX][overY + 1].tiletype === TilesEnum.PATH || checkDownLeft(tiles, overX, overY)) {
-                tempdownchance = 0;
-            }
-
-            if (temptopchance === 0 && tempdownchance !== 0) {
-                temprightchance += Math.floor(topchance / 2);
-                tempdownchance += Math.floor(topchance / 2);
-                if (temprightchance + tempdownchance < 100) {
-                    tempdownchance += 100 - (temprightchance + tempdownchance);
+        switch(type) {
+            case 0:
+                if (overX === 0 || overX === n - 2) {
+                    direction = 1;//RIGHT
                 }
-            } else if (temptopchance === 0 && tempdownchance === 0) {
-                temprightchance = 100;
-            } else if (temptopchance !== 0 && tempdownchance === 0) {
-                temprightchance += Math.floor(downchance / 2);
-                temptopchance += Math.floor(downchance / 2);
-                if (temprightchance + temptopchance < 100) {
-                    temptopchance += 100 - (temprightchance + temptopchance);
+                break;
+            case 1:
+                if (overY === 0 || overY === m - 2) {
+                    direction = 2;//DOWN
                 }
-            }
-            dirandom = randomIntFromInterval(1, 100);
-            if (dirandom <= temptopchance) {
-                direction = 0;
-            } else if (dirandom <= temptopchance + temprightchance) {
-                direction = 1;
-            } else if (dirandom <= temptopchance + temprightchance + tempdownchance) {
-                direction = 2;
-            } else {//can not happen, safety code.
-                direction = 0;
-            }
+                break;
+            case 2:
+                if (overX === 0) {
+                    direction = 1;//RIGHT
+                } else if (overX === n - 2) {
+                    direction = 2;//DOWN
+                }
+                break;
+            case 3:
+                if (overX === 0) {
+                    direction = 1;//RIGHT
+                } else if (overX === n - 2) {
+                    direction = 0;//UP
+                }
+                break;
+            case 4:
+                if (overY === 0) {
+                    direction = 2;//DOWN
+                } else if (overY === m - 2) {
+                    direction = 1;//RIGHT
+                }
+                break;
+            case 5:
+                if (overY === m - 1) {
+                    direction = 0;//UP
+                } else if (overY === 1) {
+                    direction = 1;//RIGHT
+                }
+                break;
+        }
+        if (direction === -1) {//CALCULATE DIRECTION BY CHANCE
+            direction = calculateDirection(chance1, chance2, chance3, overX, overY, n, m, type);
         }//END OF DIRECTION CALCULATION
 
         oldX = overX;
@@ -368,12 +585,15 @@ function generateType1Level(requiredData) {
             case 1:
                 overX += 1;
                 break;
+            case 3:
+                overX -= 1;
+                break;
             default:
                 overX += 1;
         }
         tiles[oldX][oldY].next = overX + ":" + overY;//chain the path tiles together
         tiles[overX][overY].tiletype = TilesEnum.PATH;
-        if (overX === n - 1) {
+        if (overX === n - 1 || overY === m - 1 || (type === 3 && overY === 0)) {
             generatePath = false;
         }
     } while (generatePath);
@@ -395,10 +615,10 @@ function generateType1Level(requiredData) {
             for (i = 0; i < n; i += 1) {//CLEAR AROUND THE PATH
                 for (j = 0; j < m; j += 1) {
                     if (tiles[i][j].tiletype === TilesEnum.PATH) {
-                        if (tiles[i][j - 1].tiletype !== TilesEnum.PATH) {//above
+                        if (j - 1 >= 0 && tiles[i][j - 1].tiletype !== TilesEnum.PATH) {//above
                             tiles[i][j - 1].tiletype = TilesEnum.BASIC;
                         }
-                        if (tiles[i][j + 1].tiletype !== TilesEnum.PATH) {//below
+                        if (j + 1 <= m - 1 && tiles[i][j + 1].tiletype !== TilesEnum.PATH) {//below
                             tiles[i][j + 1].tiletype = TilesEnum.BASIC;
                         }
                         if (i - 1 >= 0) {
@@ -442,16 +662,20 @@ function generateType1Level(requiredData) {
                 }
             }
         } else { //GENERATE ONLY WALLS
-            for (i = 0; i < n; i += 1) {
-                for (j = 0; j < m; j += 1) {
-                    if ((i === 0 && generateVerticalWalls) || (i === n - 1 && generateVerticalWalls) || j === 0 || j === m - 1) {
-                        if (tiles[i][j].tiletype === TilesEnum.BASIC) {
-                            tiles[i][j] = new TileT1Proto(i, j, TilesEnum.WALL, "", 0);
+            if (type === 0) {
+                //TODO make it check for horizontal walls or vertical depending on type
+                for (i = 0; i < n; i += 1) {
+                    for (j = 0; j < m; j += 1) {
+                        if ((i === 0 && generateVerticalWalls) || (i === n - 1 && generateVerticalWalls) || j === 0 || j === m - 1) {
+                            if (tiles[i][j].tiletype === TilesEnum.BASIC) {
+                                tiles[i][j] = new TileT1Proto(i, j, TilesEnum.WALL, "", 0);
+                            }
                         }
                     }
                 }
             }
         }
+
     }
     //END OF TREE WALLS GENERATION
 
@@ -482,7 +706,7 @@ function generateType2Level(requiredData) {
     var doore = requiredData.doore;
     var doors = requiredData.doors;
     var doorw = requiredData.doorw;
-    var tiles = getTilesArray(n);
+    tiles = getTilesArray(n);
     var i, j;
     var tiletype, doorncheck, doorecheck, doorscheck, doorwcheck;
     //GENERATE TILES
@@ -564,7 +788,7 @@ function generateType3Level(requiredData) {
     var walle = requiredData.walle;
     var walls = requiredData.walls;
     var wallw = requiredData.wallw;
-    var tiles = getTilesArray(n);
+    tiles = getTilesArray(n);
     var i, j, tiletype;
 
     //GENERATE TILES
@@ -779,7 +1003,7 @@ function drawLevel(n, m, tiles, which, stage, textures, xsize, ysize) {
 function generateLevel(which) {
     "use strict";
     var n = $("#ninput").val();
-    var m = $("#ninput2").val();
+    var m = $("#minput").val();
     if (n < 8 || m < 8) {
         alert("Please, choose bigger numbers for side sizes");
         return;
@@ -816,17 +1040,48 @@ function generateLevel(which) {
      */
     var textures = loadTiles(imgscalex, imgscaley);
     var requiredData;
+    var type = parseInt($("input[name=tdtype]:checked").val());
+    var overX, overY;
+    switch (type) {
+        case 0://Horizontal; the leftmost column is 0 to start from the left side
+            overX = 0;
+            overY = randomIntFromInterval(2, (m - 1) - 2);
+            break;
+        case 1://Vertical; the top column is 0 to start from the top side
+            overX = randomIntFromInterval(2, (n - 1) - 2);
+            overY = 0;
+            break;
+        case 2://TOP RIGHT -|; the leftmost column is 0 to start from the left side down
+            overX = 0;
+            overY = randomIntFromInterval(2, (m - 1) - 2);
+            break;
+        case 3://BOTTOM RIGHT _|; the leftmost column is 0 to start from the left side up
+            overX = 0;
+            overY = randomIntFromInterval(2, (m - 1) - 2);
+            break;
+        case 4://BOTTOM LEFT |_; the top column is 0 to start from the top side right
+            overX = randomIntFromInterval(2, (n - 1) - 2);
+            overY = 0;
+            break;
+        case 5://TOP LEFT |-; the top column is 0 to start from the top right
+            overX = randomIntFromInterval(2, (n - 1) - 2);
+            overY = 0;
+            break;
+    }
     switch (which) {
         case 0:
             requiredData = {
                 n: n,
                 m: m,
-                overY: randomIntFromInterval(2, (m - 1) - 2),
-                topchance: 33,
-                rightchance: 33,
-                downchance: 34,
+                type: type,
+                overX: overX,
+                overY: overY,
+                chance1: 33,
+                chance2: 33,
+                chance3: 34,
                 generateTreeWalls: true,
                 generateVerticalWalls: true,
+                generateHorizontalWalls: true,
                 generateForest: true,
                 etcSpawn: true,
                 etcTileChance: 66
