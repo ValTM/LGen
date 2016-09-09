@@ -381,19 +381,18 @@ function calculateDirection(chance1, chance2, chance3, overX, overY, n, m, type)
         }
     }
     var dirandom = randomIntFromInterval(1, 100);
-    console.log("Determined chances for tile " + overX + ":" + overY + " are " + tempchance1 + "; " + tempchance2 + "; " + tempchance3 + "; dirandom = " + dirandom);
     if (type === 0 || type === 1) {
         if (dirandom <= tempchance1) {
             direction = type === 0 ? 0 : 1;//UP OR RIGHT
-        } else if (dirandom <= tempchance1 + tempchance2) {
+        } else if (dirandom > tempchance1 && dirandom <= tempchance1 + tempchance2) {
             direction = type === 0 ? 1 : 2;//RIGHT OR DOWN
-        } else if (dirandom <= tempchance1 + tempchance2 + tempchance3) {
+        } else if (dirandom > tempchance1 + tempchance2 && dirandom <= tempchance1 + tempchance2 + tempchance3) {//100
             direction = type === 0 ? 2 : 3;//DOWN OR LEFT
         }
     } else {
         if (dirandom <= tempchance1) {
             direction = 1;//RIGHT
-        } else if (dirandom <= tempchance1 + tempchance2) {
+        } else {
             switch(type) {
                 case 2:
                 case 4:
@@ -495,30 +494,30 @@ function generateType1Level(requiredData) {
         case 1:
             sum = chance1 + chance2 + chance3;
             if (sum !== 100) {
-                console.log("Invalid 3 chances values!");
+                console.log("Invalid 3 chances values! sum=" + sum);
             }
             if (sum > 100) {
                 chance1 = 33;
                 chance2 = 33;
                 chance3 = 34;
             } else if (sum < 100) {
-                chance3 = 100 - sum;
+                chance3 += 100 - sum;
             }
             break;
-
         default:
-            sum = (chance1 + chance2);
+            sum = chance1 + chance2;
             if (sum !== 100) {
-                console.log("Invalid 2 chances values!");
+                console.log("Invalid 2 chances values! sum=" + sum);
             }
             if (sum > 100) {
                 chance1 = 50;
                 chance2 = 50;
             } else if (sum < 100) {
-                chance2 = 100 - sum;
+                chance2 += 100 - sum;
             }
             chance3 = 0;//Chance3 defaults to 0
     }
+    console.log("Chances are " + chance1 + ":" + chance2 + ":" + chance3);
     //END OF CHANCES INPUT CHECK
     /**(
      * 0 = up
@@ -545,30 +544,30 @@ function generateType1Level(requiredData) {
                 }
                 break;
             case 2:
-                if (overX === 0) {
+                if (overX === 0 || overX === 1) {
                     direction = 1;//RIGHT
                 } else if (overX === n - 2) {
                     direction = 2;//DOWN
                 }
                 break;
             case 3:
-                if (overX === 0) {
+                if (overX === 0 || overX === 1) {
                     direction = 1;//RIGHT
                 } else if (overX === n - 2) {
                     direction = 0;//UP
                 }
                 break;
             case 4:
-                if (overY === 0) {
+                if (overY === 0 || overY === 1) {
                     direction = 2;//DOWN
-                } else if (overY === m - 2) {
+                } else if (overY === m - 3) {
                     direction = 1;//RIGHT
                 }
                 break;
             case 5:
-                if (overY === m - 1) {
+                if (overY === m - 1 || overY === m - 2) {
                     direction = 0;//UP
-                } else if (overY === 1) {
+                } else if (overY === 2) {
                     direction = 1;//RIGHT
                 }
                 break;
