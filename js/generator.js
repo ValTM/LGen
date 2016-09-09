@@ -200,7 +200,8 @@ function generateDarkness(n, m, obstructionsCount, tiles) {
                     temptype = TilesEnum.DARK;
                     rotation = 0;
                 }
-                tiles[testtilex + i][testtiley + j] = new TileT2Proto(testtilex + i, testtiley + j, temptype, rotation);
+                tiles[testtilex + i][testtiley + j].tiletype = temptype;
+                tiles[testtilex + i][testtiley + j].rotation = rotation;
             }
         }
         generateMore = false;
@@ -242,7 +243,10 @@ function generateDecorationsExt(n, m, tiles, decorationsChance, walln, walls, wa
                                     benchRotation = 3;
                                 }
                             }
-                            tiles[i][j] = new TileT2Proto(i, j, temp === 11 ? TilesEnum.BENCH : TilesEnum.ETC, temp === 11 ? benchRotation : 0);
+                            tiles[i][j].tiletype = temp === 11 ? TilesEnum.BENCH : TilesEnum.ETC;
+                            if (temp === 11) {
+                                tiles[i][j].rotation = benchRotation;
+                            }
                         }
                     }
                 }
@@ -259,11 +263,11 @@ function generateHorizontalObstructions(n, m, tiles) {
     var i, j;
     j = Math.floor(m / 3);
     for (i = 1; i < n - randomIntFromInterval(3, 5); i += 1) {
-        tiles[i][j] = new TileT2Proto(i, j, TilesEnum.OBSTACLE, 0);
+        tiles[i][j].tiletype = TilesEnum.OBSTACLE;
     }
     j = Math.floor(2 * m / 3);
     for (i = n - 2; i > randomIntFromInterval(2, 5); i -= 1) {
-        tiles[i][j] = new TileT2Proto(i, j, TilesEnum.OBSTACLE, 0);
+        tiles[i][j].tiletype = TilesEnum.OBSTACLE;
     }
     return false; //this can not fail
 }
@@ -272,11 +276,11 @@ function generateVerticalObstructions(n, m, tiles) {
     var i, j;
     i = Math.floor(n / 3);
     for (j = 1; j < m - randomIntFromInterval(3, 5); j += 1) {
-        tiles[i][j] = new TileT2Proto(i, j, TilesEnum.OBSTACLE, 0);
+        tiles[i][j].tiletype = TilesEnum.OBSTACLE;
     }
     i = Math.floor(2 * n / 3);
     for (j = m - 2; j > randomIntFromInterval(2, 5); j -= 1) {
-        tiles[i][j] = new TileT2Proto(i, j, TilesEnum.OBSTACLE, 0);
+        tiles[i][j].tiletype = TilesEnum.OBSTACLE;
     }
     return false; //this can not fail
 }
@@ -287,7 +291,7 @@ function generateRandomObstructions(n, m, obstructionsPerc, tiles) {
         for (j = 1; j < m - 1; j += 1) {
             if (tiles[i - 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j - 1].tiletype !== TilesEnum.DOOR && tiles[i + 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j + 1].tiletype !== TilesEnum.DOOR) {//NOT NEXT TO DOORS CHECK
                 if (randomIntFromInterval(0, 100) < obstructionsPerc) {
-                    tiles[i][j] = new TileT2Proto(i, j, TilesEnum.OBSTACLE, 0);
+                    tiles[i][j].tiletype = TilesEnum.OBSTACLE;
                 }
             }
         }
@@ -473,7 +477,7 @@ function generateType1Level(requiredData) {
     }
 
     //first tile
-    tiles[overX][overY] = new TileT1Proto(overX, overY, TilesEnum.PATH, "", 0);
+    tiles[overX][overY].tiletype = TilesEnum.PATH;
 
     //CHANCES INPUT CHECK
     var chance1 = parseInt(requiredData.chance1);
@@ -602,9 +606,8 @@ function generateType1Level(requiredData) {
     //GENERATE TREE WALLS
     var generateTreeWalls = requiredData.generateTreeWalls;
     if (generateTreeWalls) {
-        var generateVerticalWalls = requiredData.generateVerticalWalls;
         var generateForest = requiredData.generateForest;
-        if (generateForest) {
+        if (generateForest) {//GENERATE FOREST
             for (i = 0; i < n; i += 1) {//EVERYTHING IS FOREST NOW
                 for (j = 0; j < m; j += 1) {
                     if (tiles[i][j].tiletype !== TilesEnum.PATH) {
@@ -612,83 +615,86 @@ function generateType1Level(requiredData) {
                     }
                 }
             }
-            for (i = 0; i < n; i += 1) {//CLEAR AROUND THE PATH
-                for (j = 0; j < m; j += 1) {
-                    if (tiles[i][j].tiletype === TilesEnum.PATH) {
-                        if (j - 1 >= 0 && tiles[i][j - 1].tiletype !== TilesEnum.PATH) {//above
-                            tiles[i][j - 1].tiletype = TilesEnum.BASIC;
-                        }
-                        if (j + 1 <= m - 1 && tiles[i][j + 1].tiletype !== TilesEnum.PATH) {//below
-                            tiles[i][j + 1].tiletype = TilesEnum.BASIC;
-                        }
-                        if (i - 1 >= 0) {
-                            if (tiles[i - 1][j].tiletype !== TilesEnum.PATH) {//left
-                                tiles[i - 1][j].tiletype = TilesEnum.BASIC;
-                            }
-                        }
-                        if (i + 1 < n) {
-                            if (tiles[i + 1][j].tiletype !== TilesEnum.PATH) {//right
-                                tiles[i + 1][j].tiletype = TilesEnum.BASIC;
-                            }
-                        }
-                        if (i - 1 >= 0 && j - 1 >= 0) {//top left
-                            if (tiles[i - 1][j - 1].tiletype !== TilesEnum.PATH) {
-                                tiles[i - 1][j - 1].tiletype = TilesEnum.BASIC;
-                            }
-                        }
-                        if (i + 1 < n && j - 1 >= 0) {//top right
-                            if (tiles[i + 1][j - 1].tiletype !== TilesEnum.PATH) {
-                                tiles[i + 1][j - 1].tiletype = TilesEnum.BASIC;
-                            }
-                        }
-                        if (i - 1 >= 0 && j + 1 < m) {//bottom left
-                            if (tiles[i - 1][j + 1].tiletype !== TilesEnum.PATH) {
-                                tiles[i - 1][j + 1].tiletype = TilesEnum.BASIC;
-                            }
-                        }
-                        if (i + 1 < n && j + 1 < m) {//bottom right
-                            if (tiles[i + 1][j + 1].tiletype !== TilesEnum.PATH) {
-                                tiles[i + 1][j + 1].tiletype = TilesEnum.BASIC;
-                            }
-                        }
-                    }
-                }
-            }
+        } else { //GENERATE WALLS ONLY
+            var generateVerticalWalls = requiredData.generateVerticalWalls;
+            var generateHorizontalWalls = requiredData.generateHorizontalWalls;
             for (i = 0; i < n; i += 1) {
                 for (j = 0; j < m; j += 1) {
-                    if (tiles[i][j].tiletype === TilesEnum.WALL) {
-                        tiles[i][j] = new TileT1Proto(i, j, TilesEnum.WALL, "", 0);
+                    if (generateHorizontalWalls) {
+                        if (j === 0 || j === m - 1) {
+                            if (tiles[i][j].tiletype !== TilesEnum.PATH) {
+                                tiles[i][j].tiletype = TilesEnum.WALL;
+                            }
+                        }
                     }
-                }
-            }
-        } else { //GENERATE ONLY WALLS
-            if (type === 0) {
-                //TODO make it check for horizontal walls or vertical depending on type
-                for (i = 0; i < n; i += 1) {
-                    for (j = 0; j < m; j += 1) {
-                        if ((i === 0 && generateVerticalWalls) || (i === n - 1 && generateVerticalWalls) || j === 0 || j === m - 1) {
-                            if (tiles[i][j].tiletype === TilesEnum.BASIC) {
-                                tiles[i][j] = new TileT1Proto(i, j, TilesEnum.WALL, "", 0);
+                    if (generateVerticalWalls) {
+                        if (i === 0 || i === n - 1) {
+                            if (tiles[i][j].tiletype !== TilesEnum.PATH) {
+                                tiles[i][j].tiletype = TilesEnum.WALL;
                             }
                         }
                     }
                 }
             }
         }
-
+        for (i = 0; i < n; i += 1) {//CLEAR AROUND THE PATH
+            for (j = 0; j < m; j += 1) {
+                if (tiles[i][j].tiletype === TilesEnum.PATH) {
+                    if (j - 1 >= 0 && tiles[i][j - 1].tiletype !== TilesEnum.PATH) {//above
+                        tiles[i][j - 1].tiletype = TilesEnum.BASIC;
+                    }
+                    if (j + 1 <= m - 1 && tiles[i][j + 1].tiletype !== TilesEnum.PATH) {//below
+                        tiles[i][j + 1].tiletype = TilesEnum.BASIC;
+                    }
+                    if (i - 1 >= 0) {
+                        if (tiles[i - 1][j].tiletype !== TilesEnum.PATH) {//left
+                            tiles[i - 1][j].tiletype = TilesEnum.BASIC;
+                        }
+                    }
+                    if (i + 1 < n) {
+                        if (tiles[i + 1][j].tiletype !== TilesEnum.PATH) {//right
+                            tiles[i + 1][j].tiletype = TilesEnum.BASIC;
+                        }
+                    }
+                    if (i - 1 >= 0 && j - 1 >= 0) {//top left
+                        if (tiles[i - 1][j - 1].tiletype !== TilesEnum.PATH) {
+                            tiles[i - 1][j - 1].tiletype = TilesEnum.BASIC;
+                        }
+                    }
+                    if (i + 1 < n && j - 1 >= 0) {//top right
+                        if (tiles[i + 1][j - 1].tiletype !== TilesEnum.PATH) {
+                            tiles[i + 1][j - 1].tiletype = TilesEnum.BASIC;
+                        }
+                    }
+                    if (i - 1 >= 0 && j + 1 < m) {//bottom left
+                        if (tiles[i - 1][j + 1].tiletype !== TilesEnum.PATH) {
+                            tiles[i - 1][j + 1].tiletype = TilesEnum.BASIC;
+                        }
+                    }
+                    if (i + 1 < n && j + 1 < m) {//bottom right
+                        if (tiles[i + 1][j + 1].tiletype !== TilesEnum.PATH) {
+                            tiles[i + 1][j + 1].tiletype = TilesEnum.BASIC;
+                        }
+                    }
+                }
+            }
+        }//END OF CLEARING AROUND THE PATH
     }
     //END OF TREE WALLS GENERATION
 
     //GENERATE DECORATIONS
     var etcSpawn = requiredData.etcSpawn;
     if (etcSpawn) {
-        var etcTileChance = requiredData.etcTileChance;
-        //var etcTile;
+        var etcTileChance = parseInt(requiredData.etcTileChance);
+        if (isNaN(etcTileChance) || etcTileChance < 0 || etcTileChance > 100) {
+            console.log("etcTileChance is invalid, continuing with default!");
+            etcTileChance = 66;
+        }
         for (i = 0; i < n; i += 1) {
             for (j = 0; j < m; j += 1) {
                 if (tiles[i][j].tiletype === TilesEnum.BASIC) {
                     if (randomIntFromInterval(1, 100) < etcTileChance) {
-                        tiles[i][j] = new TileT1Proto(i, j, TilesEnum.ETC, "", 0);
+                        tiles[i][j].tiletype = TilesEnum.ETC;
                     }
                 }
             }
@@ -902,7 +908,7 @@ function generateType3Level(requiredData) {
             x = randomIntFromInterval(2, n - 2);
             y = randomIntFromInterval(2, m - 2);
             if (tiles[x][y].tiletype === TilesEnum.BASIC) {
-                tiles[x][y] = new TileT2Proto(x, y, TilesEnum.STAIR, 0);
+                tiles[x][y].tiletype = TilesEnum.STAIR;
                 tryGen = false;
             }
         }
@@ -920,9 +926,9 @@ function drawLevel(n, m, tiles, which, stage, textures, xsize, ysize) {
         for (j = 0; j < m; j += 1) {
             //Ensure we have a base to work on
             if (which === 0) {
-                base = textures[0].clone();
+                base = textures[0].clone();//Grass
             } else {
-                base = textures[2].clone();
+                base = textures[2].clone();//Floor
             }
             base.x = tiles[i][j].x * xsize;
             base.y = tiles[i][j].y * xsize;
@@ -1079,11 +1085,11 @@ function generateLevel(which) {
                 chance1: 33,
                 chance2: 33,
                 chance3: 34,
-                generateTreeWalls: true,
-                generateVerticalWalls: true,
-                generateHorizontalWalls: true,
-                generateForest: true,
-                etcSpawn: true,
+                generateTreeWalls: $("input[name=generateTreeWalls]:checked").val() === "true",
+                generateVerticalWalls: $("input[name=generateVerticalWalls]:checked").val() === "true",
+                generateHorizontalWalls: $("input[name=generateHorizontalWalls]:checked").val() === "true",
+                generateForest: $("input[name=generateForest]:checked").val() === "true",
+                etcSpawn: $("input[name=etcSpawn]:checked").val() === "true",
                 etcTileChance: 66
             };
             tiles = generateType1Level(requiredData);
