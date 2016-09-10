@@ -760,7 +760,7 @@ function generateType2Level(requiredData) {
         obstructionsPerc = 10;
         console.log("Invalid obstructions percent! Continuing with default value!");
     }
-    var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
+    var obstructionsCount = Math.floor((n * m) * (obstructionsPerc / 100));
     var maxtriescount = 0;
     do {
         maxtriescount += 1;
@@ -844,7 +844,7 @@ function generateType3Level(requiredData) {
         obstructionsPerc = 10;
         console.log("Invalid obstructions percent! Continuing with default value!");
     }
-    var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
+    var obstructionsCount = Math.floor((n * m) * (obstructionsPerc / 100));
     var maxtriescount = 0;
     do {
         maxtriescount += 1;
