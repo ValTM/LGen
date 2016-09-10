@@ -311,7 +311,7 @@ function calculateDirection(chance1, chance2, chance3, overX, overY, n, m, type)
      * @type number
      */
     var direction = 1;
-    switch(type) {
+    switch (type) {
         case 0:
             //disable up
             if (overY - 1 <= 1 || tiles[overX][overY - 1].tiletype === TilesEnum.PATH || checkUpLeft(tiles, overX, overY)) {
@@ -393,7 +393,7 @@ function calculateDirection(chance1, chance2, chance3, overX, overY, n, m, type)
         if (dirandom <= tempchance1) {
             direction = 1;//RIGHT
         } else {
-            switch(type) {
+            switch (type) {
                 case 2:
                 case 4:
                     direction = 2;//DOWN
@@ -489,7 +489,7 @@ function generateType1Level(requiredData) {
         chance3 = 34;
     }
     var sum;
-    switch(type) {
+    switch (type) {
         case 0:
         case 1:
             sum = chance1 + chance2 + chance3;
@@ -532,7 +532,7 @@ function generateType1Level(requiredData) {
     do {
         direction = -1;//Invalid value for the check later
         //CALCULATE DIRECTION
-        switch(type) {
+        switch (type) {
             case 0:
                 if (overX === 0 || overX === n - 2) {
                     direction = 1;//RIGHT
@@ -705,8 +705,12 @@ function generateType1Level(requiredData) {
 }
 function generateType2Level(requiredData) {
     "use strict";
-    var n = requiredData.n;
-    var m = requiredData.m;
+    var n = parseInt(requiredData.n);
+    var m = parseInt(requiredData.m);
+    if (isNaN(n) || isNaN(m) || n < 9 || m < 9) {
+        console.log("Invalid n or m, choose different values!");
+        return [];
+    }
     var doorn = requiredData.doorn;
     var doore = requiredData.doore;
     var doors = requiredData.doors;
@@ -714,6 +718,10 @@ function generateType2Level(requiredData) {
     tiles = getTilesArray(n);
     var i, j;
     var tiletype, doorncheck, doorecheck, doorscheck, doorwcheck;
+    if (doorn !== "true" && doore !== "true" && doors !== "true" && doorw !== "true") {
+        doorn = "true";
+        console.log("You must choose at least 1 door! Continuing with default north door!");
+    }
     //GENERATE TILES
     for (i = 0; i < n; i += 1) {
         for (j = 0; j < m; j += 1) {
@@ -747,39 +755,45 @@ function generateType2Level(requiredData) {
 
     // GENERATE OBSTRUCTIONS
     var generateObstructions = requiredData.generateObstructions;
-    var obstructionsPerc = requiredData.obstructionsPerc;
+    var obstructionsPerc = parseInt(requiredData.obstructionsPerc);
+    if (isNaN(obstructionsPerc) || obstructionsPerc < 0 || obstructionsPerc > 100) {
+        obstructionsPerc = 10;
+        console.log("Invalid obstructions percent! Continuing with default value!");
+    }
     var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
     var maxtriescount = 0;
-    if (n > 7 && m > 7) { //ensure we have at least some space
-        do {
-            maxtriescount += 1;
-            if (maxtriescount >= 5) {
-                generateObstructions = false;
-                alert("Could not generate obstructions, try different values of the variables!");
+    do {
+        maxtriescount += 1;
+        if (maxtriescount >= 5) {
+            generateObstructions = false;
+            alert("Could not generate obstructions, try different values of the variables!");
+            break;
+        }
+        switch (randomIntFromInterval(0, 3)) {
+            case 0:
+                generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
                 break;
-            }
-            switch (randomIntFromInterval(0, 3)) {
-                case 0:
-                    generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
-                    break;
-                case 1:
-                    generateObstructions = generateVerticalObstructions(n, m, tiles);
-                    break;
-                case 2:
-                    generateObstructions = generateHorizontalObstructions(n, m, tiles);
-                    break;
-                case 3:
-                    generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
-                    break;
-            }
-        } while (generateObstructions);
-    }
+            case 1:
+                generateObstructions = generateVerticalObstructions(n, m, tiles);
+                break;
+            case 2:
+                generateObstructions = generateHorizontalObstructions(n, m, tiles);
+                break;
+            case 3:
+                generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
+                break;
+        }
+    } while (generateObstructions);
     //END OF OBSTRUCTIONS
 
     //GENERATE DECORATIONS
     var generateDecorationsSwitch = requiredData.generateDecorationsSwitch;
     if (generateDecorationsSwitch) {
-        var decorationsChance = requiredData.decorationsChance;
+        var decorationsChance = parseInt(requiredData.decorationsChance);
+        if (isNaN(decorationsChance) || decorationsChance < 0 || decorationsChance > 100) {
+            decorationsChance = 80;
+            console.log("Invalid obstructions percent! Continuing with default value!");
+        }
         generateDecorations(n, m, tiles, decorationsChance);
     }
     //END OF DECORATIONS
@@ -787,8 +801,12 @@ function generateType2Level(requiredData) {
 }
 function generateType3Level(requiredData) {
     "use strict";
-    var n = requiredData.n;
-    var m = requiredData.m;
+    var n = parseInt(requiredData.n);
+    var m = parseInt(requiredData.m);
+    if (isNaN(n) || isNaN(m) || n < 9 || m < 9) {
+        console.log("Invalid n or m, choose different values!");
+        return [];
+    }
     var walln = requiredData.walln;
     var walle = requiredData.walle;
     var walls = requiredData.walls;
@@ -821,76 +839,82 @@ function generateType3Level(requiredData) {
 
     //GENERATE OBSTRUCTIONS
     var generateObstructions = requiredData.generateObstructions;
-    var obstructionsPerc = requiredData.obstructionsPerc;
+    var obstructionsPerc = parseInt(requiredData.obstructionsPerc);
+    if (isNaN(obstructionsPerc) || obstructionsPerc < 0 || obstructionsPerc > 100) {
+        obstructionsPerc = 10;
+        console.log("Invalid obstructions percent! Continuing with default value!");
+    }
     var obstructionsCount = Math.floor((n * m) / obstructionsPerc);
     var maxtriescount = 0;
-    if (n > 7 && m > 7) { //ensure we have at least some space
-        do {
-            maxtriescount += 1;
-            if (maxtriescount >= 5) {
-                generateObstructions = false;
-                alert("Could not generate obstructions, try different values of the variables!");
-                break;
+    do {
+        maxtriescount += 1;
+        if (maxtriescount >= 5) {
+            generateObstructions = false;
+            alert("Could not generate obstructions, try different values of the variables!");
+            break;
+        }
+        if (walln === "true" && walls === "true" && walle === "true" && wallw === "true") { //CLOSED ROOM
+            switch (randomIntFromInterval(0, 3)) {
+                case 0:
+                    generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
+                    break;
+                case 1:
+                    generateObstructions = generateVerticalObstructions(n, m, tiles);
+                    break;
+                case 2:
+                    generateObstructions = generateHorizontalObstructions(n, m, tiles);
+                    break;
+                case 3:
+                    generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
+                    break;
             }
-            if (walln === "true" && walls === "true" && walle === "true" && wallw === "true") { //CLOSED ROOM
-                switch (randomIntFromInterval(0, 3)) {
-                    case 0:
-                        generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
-                        break;
-                    case 1:
-                        generateObstructions = generateVerticalObstructions(n, m, tiles);
-                        break;
-                    case 2:
-                        generateObstructions = generateHorizontalObstructions(n, m, tiles);
-                        break;
-                    case 3:
-                        generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
-                        break;
-                }
-            } else if (walln === "true" && walls === "true") {
-                switch (randomIntFromInterval(0, 2)) {
-                    case 0:
-                        generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
-                        break;
-                    case 1:
-                        generateObstructions = generateVerticalObstructions(n, m, tiles);
-                        break;
-                    case 2:
-                        generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
-                        break;
-                }
-            } else if (wallw === "true" && walle === "true") {
-                switch (randomIntFromInterval(0, 2)) {
-                    case 0:
-                        generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
-                        break;
-                    case 1:
-                        generateObstructions = generateHorizontalObstructions(n, m, tiles);
-                        break;
-                    case 2:
-                        generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
-                        break;
-                }
-            } else {
-                switch (randomIntFromInterval(0, 1)) {
-                    case 0:
-                        generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
-                        break;
-                    case 1:
-                        generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
-                        break;
-                }
+        } else if (walln === "true" && walls === "true") {
+            switch (randomIntFromInterval(0, 2)) {
+                case 0:
+                    generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
+                    break;
+                case 1:
+                    generateObstructions = generateVerticalObstructions(n, m, tiles);
+                    break;
+                case 2:
+                    generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
+                    break;
             }
+        } else if (wallw === "true" && walle === "true") {
+            switch (randomIntFromInterval(0, 2)) {
+                case 0:
+                    generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
+                    break;
+                case 1:
+                    generateObstructions = generateHorizontalObstructions(n, m, tiles);
+                    break;
+                case 2:
+                    generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
+                    break;
+            }
+        } else {
+            switch (randomIntFromInterval(0, 1)) {
+                case 0:
+                    generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
+                    break;
+                case 1:
+                    generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
+                    break;
+            }
+        }
 
 
-        } while (generateObstructions);
-    }
+    } while (generateObstructions);
     //END OF OBSTRUCTIONS
 
     //GENERATE DECORATIONS
     var generateDecorationsSwitch = requiredData.generateDecorationsSwitch;
     if (generateDecorationsSwitch) {
-        var decorationsChance = requiredData.decorationsChance;
+        var decorationsChance = parseInt(requiredData.decorationsChance);
+        if (isNaN(decorationsChance) || decorationsChance < 0 || decorationsChance > 100) {
+            decorationsChance = 80;
+            console.log("Invalid obstructions percent! Continuing with default value!");
+        }
         generateDecorationsExt(n, m, tiles, decorationsChance, (walln === "true"), (walls === "true"), (wallw === "true"), (walle === "true"), true);
     }
     //END OF DECORATIONS
@@ -1045,13 +1069,20 @@ function generateLevel(which) {
      */
     var textures = loadTiles(imgscalex, imgscaley);
     var requiredData;
+
     var type = parseInt($("input[name=tdtype]:checked").val());
     var overX = $("#overX").val();
     var overY = $("#overY").val();
     var chance1 = $("#chance1").val();
     var chance2 = $("#chance2").val();
     var chance3 = $("#chance3").val();
+    var generateTreeWalls = $("input[name=generateTreeWalls]:checked").val() === "true";
+    var generateVerticalWalls = $("input[name=generateVerticalWalls]:checked").val() === "true";
+    var generageHorizontalWalls = $("input[name=generateHorizontalWalls]:checked").val() === "true";
+    var generateForest = $("input[name=generateForest]:checked").val() === "true";
+    var etcSpawn = $("input[name=etcSpawn]:checked").val() === "true";
     var etcTileChance = $("#etcTileChance").val();
+
     switch (type) {
         case 0://Horizontal; the leftmost column is 0 to start from the left side
             overX = 0;
@@ -1078,6 +1109,7 @@ function generateLevel(which) {
             overY = 0;
             break;
     }
+
     switch (which) {
         case 0:
             requiredData = {
@@ -1089,11 +1121,11 @@ function generateLevel(which) {
                 chance1: chance1,
                 chance2: chance2,
                 chance3: chance3,
-                generateTreeWalls: $("input[name=generateTreeWalls]:checked").val() === "true",
-                generateVerticalWalls: $("input[name=generateVerticalWalls]:checked").val() === "true",
-                generateHorizontalWalls: $("input[name=generateHorizontalWalls]:checked").val() === "true",
-                generateForest: $("input[name=generateForest]:checked").val() === "true",
-                etcSpawn: $("input[name=etcSpawn]:checked").val() === "true",
+                generateTreeWalls: generateTreeWalls,
+                generateVerticalWalls: generateVerticalWalls,
+                generateHorizontalWalls: generageHorizontalWalls,
+                generateForest: generateForest,
+                etcSpawn: etcSpawn,
                 etcTileChance: etcTileChance
             };
             tiles = generateType1Level(requiredData);
