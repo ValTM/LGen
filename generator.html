@@ -10,7 +10,6 @@
 </head>
 <body>
 <h1>Level generator</h1>
-
 <div class="m5pxa">
     <h3>Please select level type</h3>
     <input type="radio" name="toggler" value="1">Tower defense type<br>
@@ -30,7 +29,7 @@
 <hr>
 <div class="m5pxa">
     <!--TD type inputs-->
-    <div id="blk-1" class="toHide" style="display:none;">
+    <div id="blk-1" class="toHide">
         <h3>Tower Defense type</h3>
         <div class="tableholder">
             <div class="tablewrap">
@@ -41,17 +40,17 @@
                         </td>
                         <td>
                             <div class="radiowrap">
-                                <input type="radio" name="tdtype" class="fl" value="0" checked="checked">
+                                <input type="radio" name="tdtype" value="0" checked="checked">
                                 <p>1</p>
-                                <input type="radio" name="tdtype" class="fl" value="1">
+                                <input type="radio" name="tdtype" value="1">
                                 <p>2</p>
-                                <input type="radio" name="tdtype" class="fl" value="2">
+                                <input type="radio" name="tdtype" value="2">
                                 <p>3</p>
-                                <input type="radio" name="tdtype" class="fl" value="3">
+                                <input type="radio" name="tdtype" value="3">
                                 <p>4</p>
-                                <input type="radio" name="tdtype" class="fl" value="4">
+                                <input type="radio" name="tdtype" value="4">
                                 <p>5</p>
-                                <input type="radio" name="tdtype" class="fl" value="5">
+                                <input type="radio" name="tdtype" value="5">
                                 <p>6</p>
                             </div>
                         </td>
@@ -183,48 +182,228 @@
     </div>
 </div>
 <!--BoI type inputs-->
-<div id="blk-2" class="toHide" style="display:none;">
-    <h3>Walled room with doors type</h3>
-    <p class="fl m5pxlr">Door N: </p><input type="radio" name="doorn" value="true" class="fl" checked="checked">
-    <p class="fl m5pxlr">Yes </p><input type="radio" name="doorn" value="false" class="fl m5pxlr">
-    <p class="fl">No</p><br>
-    <p class="fl m5pxlr">Door E: </p><input type="radio" name="doore" value="true" class="fl" checked="checked">
-    <p class="fl m5pxlr">Yes </p><input type="radio" name="doore" value="false" class="fl m5pxlr">
-    <p class="fl">No</p><br>
-    <p class="fl m5pxlr">Door S: </p><input type="radio" name="doors" value="true" class="fl" checked="checked">
-    <p class="fl m5pxlr">Yes </p><input type="radio" name="doors" value="false" class="fl m5pxlr">
-    <p class="fl">No</p><br>
-    <p class="fl m5pxlr">Door W: </p><input type="radio" name="doorw" value="true" class="fl" checked="checked">
-    <p class="fl m5pxlr">Yes </p><input type="radio" name="doorw" value="false" class="fl m5pxlr">
-    <p class="fl">No</p><br>
-    <input type="submit" id="boisubmit" value="Generate" onclick="generateLevel(1)">
-    <input type="submit" value="Export JSON" onclick="exportJSON()">
+<div class="m5pxa">
+    <div id="blk-2" class="toHide">
+        <h3>Walled room with doors type</h3>
+        <div class="tableholder">
+            <div class="tablewrap">
+                <table>
+                    <tr>
+                        <td>
+                            <p>Door North:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="doorn" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="doorn" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Door East:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="doore" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="doore" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Door South:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="doors" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="doors" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Door West:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="doorw" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="doorw" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Generate Obstructions:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="genobst2" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="genobst2" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Generate Decorations:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="gendecot2" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="gendecot2" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="tablewrap">
+                <table>
+                    <tr>
+                        <td>
+                            <p>Obstructions total percentage:</p>
+                        </td>
+                        <td>
+                            <input maxlength="2" type="number" id="obsPercT2" class="smalltextinput" value="10">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Decorations total percentage:</p>
+                        </td>
+                        <td>
+                            <input maxlength="2" type="number" id="decoPercT2" class="smalltextinput" value="80">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="submitwrap">
+            <input type="submit" id="boisubmit" value="Generate" onclick="generateLevel(1)">
+            <input type="submit" value="Export JSON" onclick="exportJSON()">
+        </div>
+    </div>
 </div>
 <!--Open walls type inputs-->
-<div id="blk-3" class="toHide" style="display:none;">
-    <h3>Open walls room type</h3>
-    <p class="fl m5pxlr">Wall N: </p><input type="radio" name="walln" value="true" class="fl" checked="checked">
-    <p class="fl m5pxlr">Yes </p><input type="radio" name="walln" value="false" class="fl m5pxlr">
-    <p class="fl">No</p><br>
-    <p class="fl m5pxlr">Wall E: </p><input type="radio" name="walle" value="true" class="fl" checked="checked">
-    <p class="fl m5pxlr">Yes </p><input type="radio" name="walle" value="false" class="fl m5pxlr">
-    <p class="fl">No</p><br>
-    <p class="fl m5pxlr">Wall S: </p><input type="radio" name="walls" value="true" class="fl">
-    <p class="fl m5pxlr">Yes </p><input type="radio" name="walls" value="false" class="fl m5pxlr" checked="checked">
-    <p class="fl">No</p><br>
-    <p class="fl m5pxlr">Wall W: </p><input type="radio" name="wallw" value="true" class="fl" checked="checked">
-    <p class="fl m5pxlr">Yes </p><input type="radio" name="wallw" value="false" class="fl m5pxlr">
-    <p class="fl">No</p><br>
-    <input type="submit" id="orsubmit" value="Generate" onclick="generateLevel(2)">
-    <input type="submit" value="Export JSON" onclick="exportJSON()">
+<div class="m5pxa">
+    <div id="blk-3" class="toHide">
+        <h3>Open walls room type</h3>
+        <div class="tableholder">
+            <div class="tablewrap">
+                <table>
+                    <tr>
+                        <td>
+                            <p>Wall North:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="walln" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="walln" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Wall East:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="walle" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="walle" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Wall South:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="walls" value="true">
+                            <p>Yes </p>
+                            <input type="radio" name="walls" value="false" checked="checked">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Wall West:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="wallw" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="wallw" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Generate Obstructions:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="genobst3" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="genobst3" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Generate Decorations:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="gendecot3" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="gendecot3" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Generate Stairs:</p>
+                        </td>
+                        <td class="radiowrap">
+                            <input type="radio" name="genstairt3" value="true" checked="checked">
+                            <p>Yes </p>
+                            <input type="radio" name="genstairt3" value="false">
+                            <p>No</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="tablewrap">
+                <table>
+                    <tr>
+                        <td>
+                            <p>Obstructions total percentage:</p>
+                        </td>
+                        <td>
+                            <input maxlength="2" type="number" id="obsPercT3" class="smalltextinput" value="10">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Decorations total percentage:</p>
+                        </td>
+                        <td>
+                            <input maxlength="2" type="number" id="decoPercT3" class="smalltextinput" value="80">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="submitwrap">
+            <input type="submit" id="orsubmit" value="Generate" onclick="generateLevel(2)">
+            <input type="submit" value="Export JSON" onclick="exportJSON()">
+        </div>
+    </div>
 </div>
-</div>
+<hr class="toShow"/>
 <div class="canvasDiv" id="canvasDiv">
     <canvas id="genCanvas"></canvas>
 </div>
 <script type="application/javascript">
     $(function () {
         $("[name=toggler]").click(function () {
+            $('.toShow').show();
             $('.toHide').hide('slow');
             $("#blk-" + $(this).val()).show('slow');
         });

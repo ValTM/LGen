@@ -228,7 +228,7 @@ function generateDecorationsExt(n, m, tiles, decorationsChance, walln, walls, wa
             }
             if (check) {//ONLY NEXT TO WALLS
                 if (tiles[i - 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j - 1].tiletype !== TilesEnum.DOOR && tiles[i + 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j + 1].tiletype !== TilesEnum.DOOR) {//NOT NEXT TO DOORS CHECK
-                    if (randomIntFromInterval(1, 100) - (100 - decorationsChance) > 0) {
+                    if (randomIntFromInterval(1, 100) - (100 - decorationsChance) >= 0) {
                         if (tiles[i][j].tiletype === TilesEnum.BASIC) {
                             temp = randomIntFromInterval(11, 14);
                             if (temp === 11) {
@@ -290,7 +290,7 @@ function generateRandomObstructions(n, m, obstructionsPerc, tiles) {
     for (i = 1; i < n - 1; i += 1) {
         for (j = 1; j < m - 1; j += 1) {
             if (tiles[i - 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j - 1].tiletype !== TilesEnum.DOOR && tiles[i + 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j + 1].tiletype !== TilesEnum.DOOR) {//NOT NEXT TO DOORS CHECK
-                if (randomIntFromInterval(0, 100) < obstructionsPerc) {
+                if (randomIntFromInterval(0, 100) <= obstructionsPerc) {
                     tiles[i][j].tiletype = TilesEnum.OBSTACLE;
                 }
             }
@@ -412,14 +412,14 @@ function generateType1Level(requiredData) {
     var n = parseInt(requiredData.n);
     var m = parseInt(requiredData.m);
     if (isNaN(n) || n < 9 || isNaN(m) || m < 9) {
-        console.log("Invalid or too small n or m values, supply an integer with at least 9 as its value!");
+        console.error("Invalid or too small n or m values, supply an integer with at least 9 as its value!");
         return [];
     }
     tiles = getTilesArray(n);
     var i, j;
     var type = requiredData.type;
     if (isNaN(type) || type < 0 || type > 5) {
-        console.log("Invalid type! Continuing with default");
+        console.error("Invalid type! Continuing with default");
         type = 0;
     }
 
@@ -433,7 +433,7 @@ function generateType1Level(requiredData) {
     var overX = parseInt(requiredData.overX);
     var overY = parseInt(requiredData.overY);
     if (isNaN(overX) || overX < 0 || isNaN(overY) || overY < 0) {
-        console.log("Invalid overX or overY values");
+        console.error("Invalid overX or overY values");
         return [];
     }
     switch (type) {
@@ -483,7 +483,7 @@ function generateType1Level(requiredData) {
     var chance2 = parseInt(requiredData.chance2);
     var chance3 = parseInt(requiredData.chance3);
     if (isNaN(chance1) || isNaN(chance2) || isNaN(chance3)) {
-        alert("Invalid chance data! Continuing with default vaules!");
+        console.error("Invalid chance data! Continuing with default vaules!");
         chance1 = 33;
         chance2 = 33;
         chance3 = 34;
@@ -494,7 +494,7 @@ function generateType1Level(requiredData) {
         case 1:
             sum = chance1 + chance2 + chance3;
             if (sum !== 100) {
-                console.log("Invalid 3 chances values! sum=" + sum);
+                console.error("Invalid 3 chances values! sum=" + sum);
             }
             if (sum > 100) {
                 chance1 = 33;
@@ -507,7 +507,7 @@ function generateType1Level(requiredData) {
         default:
             sum = chance1 + chance2;
             if (sum !== 100) {
-                console.log("Invalid 2 chances values! sum=" + sum);
+                console.error("Invalid 2 chances values! sum=" + sum);
             }
             if (sum > 100) {
                 chance1 = 50;
@@ -517,7 +517,6 @@ function generateType1Level(requiredData) {
             }
             chance3 = 0;//Chance3 defaults to 0
     }
-    console.log("Chances are " + chance1 + ":" + chance2 + ":" + chance3);
     //END OF CHANCES INPUT CHECK
     /**(
      * 0 = up
@@ -686,7 +685,7 @@ function generateType1Level(requiredData) {
     if (etcSpawn) {
         var etcTileChance = parseInt(requiredData.etcTileChance);
         if (isNaN(etcTileChance) || etcTileChance < 0 || etcTileChance > 100) {
-            console.log("etcTileChance is invalid, continuing with default!");
+            console.error("etcTileChance is invalid, continuing with default!");
             etcTileChance = 66;
         }
         for (i = 0; i < n; i += 1) {
@@ -708,7 +707,7 @@ function generateType2Level(requiredData) {
     var n = parseInt(requiredData.n);
     var m = parseInt(requiredData.m);
     if (isNaN(n) || isNaN(m) || n < 9 || m < 9) {
-        console.log("Invalid n or m, choose different values!");
+        console.error("Invalid n or m, choose different values!");
         return [];
     }
     var doorn = requiredData.doorn;
@@ -718,18 +717,18 @@ function generateType2Level(requiredData) {
     tiles = getTilesArray(n);
     var i, j;
     var tiletype, doorncheck, doorecheck, doorscheck, doorwcheck;
-    if (doorn !== "true" && doore !== "true" && doors !== "true" && doorw !== "true") {
-        doorn = "true";
+    if (doorn !== true && doore !== true && doors !== true && doorw !== true) {
+        doorn = true;
         console.log("You must choose at least 1 door! Continuing with default north door!");
     }
     //GENERATE TILES
     for (i = 0; i < n; i += 1) {
         for (j = 0; j < m; j += 1) {
             if (i === 0 || j === 0 || i === n - 1 || j === m - 1) {//If we're on the walls
-                doorncheck = (doorn === "true") && (i === Math.floor(n / 2) && j === 0);
-                doorecheck = (doorw === "true") && (i === 0 && j === Math.floor(m / 2));
-                doorscheck = (doors === "true") && (i === Math.floor(n / 2) && j === m - 1);
-                doorwcheck = (doore === "true") && (i === n - 1 && j === Math.floor(m / 2));
+                doorncheck = doorn && (i === Math.floor(n / 2) && j === 0);
+                doorecheck = doorw && (i === 0 && j === Math.floor(m / 2));
+                doorscheck = doors && (i === Math.floor(n / 2) && j === m - 1);
+                doorwcheck = doore && (i === n - 1 && j === Math.floor(m / 2));
                 if (doorncheck || doorecheck || doorscheck || doorwcheck) {
                     tiletype = 1;//DOOR
                 } else {
@@ -758,15 +757,15 @@ function generateType2Level(requiredData) {
     var obstructionsPerc = parseInt(requiredData.obstructionsPerc);
     if (isNaN(obstructionsPerc) || obstructionsPerc < 0 || obstructionsPerc > 100) {
         obstructionsPerc = 10;
-        console.log("Invalid obstructions percent! Continuing with default value!");
+        console.error("Invalid obstructions percent! Continuing with default value!");
     }
     var obstructionsCount = Math.floor((n * m) * (obstructionsPerc / 100));
     var maxtriescount = 0;
-    do {
+    while (generateObstructions) {
         maxtriescount += 1;
         if (maxtriescount >= 5) {
             generateObstructions = false;
-            alert("Could not generate obstructions, try different values of the variables!");
+            console.error("Could not generate obstructions, try different values of the variables!");
             break;
         }
         switch (randomIntFromInterval(0, 3)) {
@@ -783,7 +782,7 @@ function generateType2Level(requiredData) {
                 generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
                 break;
         }
-    } while (generateObstructions);
+    }
     //END OF OBSTRUCTIONS
 
     //GENERATE DECORATIONS
@@ -792,7 +791,7 @@ function generateType2Level(requiredData) {
         var decorationsChance = parseInt(requiredData.decorationsChance);
         if (isNaN(decorationsChance) || decorationsChance < 0 || decorationsChance > 100) {
             decorationsChance = 80;
-            console.log("Invalid obstructions percent! Continuing with default value!");
+            console.error("Invalid obstructions percent! Continuing with default value!");
         }
         generateDecorations(n, m, tiles, decorationsChance);
     }
@@ -804,7 +803,7 @@ function generateType3Level(requiredData) {
     var n = parseInt(requiredData.n);
     var m = parseInt(requiredData.m);
     if (isNaN(n) || isNaN(m) || n < 9 || m < 9) {
-        console.log("Invalid n or m, choose different values!");
+        console.error("Invalid n or m, choose different values!");
         return [];
     }
     var walln = requiredData.walln;
@@ -819,7 +818,7 @@ function generateType3Level(requiredData) {
         for (j = 0; j < m; j += 1) {
             if ((i === 0 && j === 0) || (i === 0 && j === m - 1) || (i === n - 1 && j === 0) || (i === n - 1 && j === m - 1)) {
                 tiletype = 1;
-            } else if (((walln === "true") && j === 0) || ((walle === "true") && i === n - 1) || ((wallw === "true") && i === 0) || ((walls === "true") && j === m - 1)) {
+            } else if ((walln && j === 0) || (walle && i === n - 1) || (wallw && i === 0) || (walls && j === m - 1)) {
                 tiletype = 1;
             } else {
                 tiletype = 0;
@@ -842,18 +841,18 @@ function generateType3Level(requiredData) {
     var obstructionsPerc = parseInt(requiredData.obstructionsPerc);
     if (isNaN(obstructionsPerc) || obstructionsPerc < 0 || obstructionsPerc > 100) {
         obstructionsPerc = 10;
-        console.log("Invalid obstructions percent! Continuing with default value!");
+        console.error("Invalid obstructions percent! Continuing with default value!");
     }
     var obstructionsCount = Math.floor((n * m) * (obstructionsPerc / 100));
     var maxtriescount = 0;
-    do {
+    while (generateObstructions) {
         maxtriescount += 1;
         if (maxtriescount >= 5) {
             generateObstructions = false;
-            alert("Could not generate obstructions, try different values of the variables!");
+            console.error("Could not generate obstructions, try different values of the variables!");
             break;
         }
-        if (walln === "true" && walls === "true" && walle === "true" && wallw === "true") { //CLOSED ROOM
+        if (walln && walls && walle && wallw) { //CLOSED ROOM
             switch (randomIntFromInterval(0, 3)) {
                 case 0:
                     generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
@@ -868,7 +867,7 @@ function generateType3Level(requiredData) {
                     generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
                     break;
             }
-        } else if (walln === "true" && walls === "true") {
+        } else if (walln && walls) {
             switch (randomIntFromInterval(0, 2)) {
                 case 0:
                     generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
@@ -880,7 +879,7 @@ function generateType3Level(requiredData) {
                     generateObstructions = generateDarkness(n, m, obstructionsCount, tiles);
                     break;
             }
-        } else if (wallw === "true" && walle === "true") {
+        } else if (wallw && walle) {
             switch (randomIntFromInterval(0, 2)) {
                 case 0:
                     generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
@@ -904,7 +903,7 @@ function generateType3Level(requiredData) {
         }
 
 
-    } while (generateObstructions);
+    }
     //END OF OBSTRUCTIONS
 
     //GENERATE DECORATIONS
@@ -913,21 +912,26 @@ function generateType3Level(requiredData) {
         var decorationsChance = parseInt(requiredData.decorationsChance);
         if (isNaN(decorationsChance) || decorationsChance < 0 || decorationsChance > 100) {
             decorationsChance = 80;
-            console.log("Invalid obstructions percent! Continuing with default value!");
+            console.error("Invalid obstructions percent! Continuing with default value!");
         }
-        generateDecorationsExt(n, m, tiles, decorationsChance, (walln === "true"), (walls === "true"), (wallw === "true"), (walle === "true"), true);
+        generateDecorationsExt(n, m, tiles, decorationsChance, walln, walls, wallw, walle, true);
     }
     //END OF DECORATIONS
 
     //STAIRS
     var generateStairs = requiredData.generateStairs;
-    if ((walln === "true") && (walls === "true") && (wallw === "true") && (walle === "true")) { //if all walls are on - we must have an entrance
+    if (walln && walls && wallw && walle) { //if all walls are on - we must have an entrance
         generateStairs = true;
     }
     if (generateStairs) {
         var tryGen = true;
-        var x, y;
+        var x, y, ii = 0;
         while (tryGen) {
+            ii += 1;
+            if (ii >= 100) {
+                console.error("Could not generate stairs!");
+                tryGen = false;
+            }
             x = randomIntFromInterval(2, n - 2);
             y = randomIntFromInterval(2, m - 2);
             if (tiles[x][y].tiletype === TilesEnum.BASIC) {
@@ -1082,7 +1086,6 @@ function generateLevel(which) {
     var generateForest = $("input[name=generateForest]:checked").val() === "true";
     var etcSpawn = $("input[name=etcSpawn]:checked").val() === "true";
     var etcTileChance = $("#etcTileChance").val();
-
     switch (type) {
         case 0://Horizontal; the leftmost column is 0 to start from the left side
             overX = 0;
@@ -1110,6 +1113,16 @@ function generateLevel(which) {
             break;
     }
 
+    var generateObstructionsT2 = $("input[name=genobst2]:checked").val() === "true";
+    var generateDecorationsT2 = $("input[name=gendecot2]:checked").val() === "true";
+    var obsperct2 = $("#obsPercT2").val();
+    var decoperct2 = $("#decoPercT2").val();
+
+    var generateObstructionsT3 = $("input[name=genobst3]:checked").val() === "true";
+    var generateDecorationsT3 = $("input[name=gendecot3]:checked").val() === "true";
+    var generateStairT3 = $("input[name=genstairt3]:checked").val() === "true";
+    var obsperct3 = $("#obsPercT3").val();
+    var decoperct3 = $("#decoPercT3").val();
     switch (which) {
         case 0:
             requiredData = {
@@ -1134,14 +1147,14 @@ function generateLevel(which) {
             requiredData = {
                 n: n,
                 m: m,
-                doorn: $("input[name='doorn']:checked").val(),
-                doore: $("input[name='doore']:checked").val(),
-                doors: $("input[name='doors']:checked").val(),
-                doorw: $("input[name='doorw']:checked").val(),
-                generateObstructions: true,
-                obstructionsPerc: 10,
-                generateDecorationsSwitch: true,
-                decorationsChance: 80,
+                doorn: $("input[name='doorn']:checked").val() === "true",
+                doore: $("input[name='doore']:checked").val() === "true",
+                doors: $("input[name='doors']:checked").val() === "true",
+                doorw: $("input[name='doorw']:checked").val() === "true",
+                generateObstructions: generateObstructionsT2,
+                obstructionsPerc: obsperct2,
+                generateDecorationsSwitch: generateDecorationsT2,
+                decorationsChance: decoperct2,
                 textures: textures,
                 xsize: xsize,
                 ysize: ysize
@@ -1152,15 +1165,15 @@ function generateLevel(which) {
             requiredData = {
                 n: n,
                 m: m,
-                walln: $("input[name='walln']:checked").val(),
-                walle: $("input[name='walle']:checked").val(),
-                walls: $("input[name='walls']:checked").val(),
-                wallw: $("input[name='wallw']:checked").val(),
-                generateObstructions: true,
-                obstructionsPerc: 10,
-                generateDecorationsSwitch: true,
-                decorationsChance: 80,
-                generateStairs: true,
+                walln: $("input[name='walln']:checked").val() === "true",
+                walle: $("input[name='walle']:checked").val() === "true",
+                walls: $("input[name='walls']:checked").val() === "true",
+                wallw: $("input[name='wallw']:checked").val() === "true",
+                generateObstructions: generateObstructionsT3,
+                obstructionsPerc: obsperct3,
+                generateDecorationsSwitch: generateDecorationsT3,
+                decorationsChance: decoperct3,
+                generateStairs: generateStairT3,
                 textures: textures,
                 xsize: xsize,
                 ysize: ysize
