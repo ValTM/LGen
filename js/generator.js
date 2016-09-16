@@ -163,49 +163,53 @@ function checkDownLeft(tiles, overx, overy, m) {
 }
 function generateDarkness(n, m, obstructionsCount, tiles) {
     "use strict";
+    var maxtriescount = 0;
     var generateMore = true;
     var testtilex, testtiley, temptype;
     var sidesize, i, j, rotation;
     testtilex = randomIntFromInterval(2, n - 6);//m - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
     testtiley = randomIntFromInterval(2, m - 6);//n - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
     sidesize = Math.floor(Math.sqrt(obstructionsCount));
-    if (testtilex + sidesize < n - 2 && testtiley + sidesize < m - 2) { //check bounds
-        for (i = 0; i < sidesize; i += 1) {
-            for (j = 0; j < sidesize; j += 1) {
-                if (i === 0 && j === 0) {
-                    temptype = TilesEnum.DARKC;
-                    rotation = 0;
-                } else if (i === sidesize - 1 && j === 0) {
-                    temptype = TilesEnum.DARKC;
-                    rotation = 1;
-                } else if (i === 0 && j === sidesize - 1) {
-                    temptype = TilesEnum.DARKC;
-                    rotation = 3;
-                } else if (i === sidesize - 1 && j === sidesize - 1) {
-                    temptype = TilesEnum.DARKC;
-                    rotation = 2;
-                } else if (i === 0) {
-                    temptype = TilesEnum.DARKW;
-                    rotation = 3;
-                } else if (j === 0) {
-                    temptype = TilesEnum.DARKW;
-                    rotation = 0;
-                } else if (j === sidesize - 1) {
-                    temptype = TilesEnum.DARKW;
-                    rotation = 2;
-                } else if (i === sidesize - 1) {
-                    temptype = TilesEnum.DARKW;
-                    rotation = 1;
-                } else {
-                    temptype = TilesEnum.DARK;
-                    rotation = 0;
+    while (maxtriescount < 5) {
+        maxtriescount += 1;
+        if (testtilex + sidesize < n - 2 && testtiley + sidesize < m - 2) { //check bounds
+            for (i = 0; i < sidesize; i += 1) {
+                for (j = 0; j < sidesize; j += 1) {
+                    if (i === 0 && j === 0) {
+                        temptype = TilesEnum.DARKC;
+                        rotation = 0;
+                    } else if (i === sidesize - 1 && j === 0) {
+                        temptype = TilesEnum.DARKC;
+                        rotation = 1;
+                    } else if (i === 0 && j === sidesize - 1) {
+                        temptype = TilesEnum.DARKC;
+                        rotation = 3;
+                    } else if (i === sidesize - 1 && j === sidesize - 1) {
+                        temptype = TilesEnum.DARKC;
+                        rotation = 2;
+                    } else if (i === 0) {
+                        temptype = TilesEnum.DARKW;
+                        rotation = 3;
+                    } else if (j === 0) {
+                        temptype = TilesEnum.DARKW;
+                        rotation = 0;
+                    } else if (j === sidesize - 1) {
+                        temptype = TilesEnum.DARKW;
+                        rotation = 2;
+                    } else if (i === sidesize - 1) {
+                        temptype = TilesEnum.DARKW;
+                        rotation = 1;
+                    } else {
+                        temptype = TilesEnum.DARK;
+                        rotation = 0;
+                    }
+                    tiles[testtilex + i][testtiley + j].tiletype = temptype;
+                    tiles[testtilex + i][testtiley + j].rotation = rotation;
                 }
-                tiles[testtilex + i][testtiley + j].tiletype = temptype;
-                tiles[testtilex + i][testtiley + j].rotation = rotation;
             }
+            generateMore = false;
         }
-        generateMore = false;
-    } //retry if out of bounds
+    }
     return generateMore;
 }
 function generateDecorationsExt(n, m, tiles, decorationsChance, walln, walls, wallw, walle, generateByWalls) {
@@ -601,12 +605,12 @@ function generateType1Level(requiredData) {
     } while (generatePath);
     //END OF TILES CREATION
 
-    //GENERATE TREE WALLS
-    var generateTreeWalls = requiredData.generateTreeWalls;
-    if (generateTreeWalls) {
-        var generateForest = requiredData.generateForest;
-        if (generateForest) {//GENERATE FOREST
-            for (i = 0; i < n; i += 1) {//EVERYTHING IS FOREST NOW
+    //GENERATE WALLS
+    var generateWalls = requiredData.generateWalls;
+    if (generateWalls) {
+        var fillLevel = requiredData.fillLevel;
+        if (fillLevel) {//FILL LEVEL
+            for (i = 0; i < n; i += 1) {//EVERYTHING IS FULL NOW
                 for (j = 0; j < m; j += 1) {
                     if (tiles[i][j].tiletype !== TilesEnum.PATH) {
                         tiles[i][j].tiletype = TilesEnum.WALL;
@@ -678,7 +682,7 @@ function generateType1Level(requiredData) {
             }
         }//END OF CLEARING AROUND THE PATH
     }
-    //END OF TREE WALLS GENERATION
+    //END OF WALLS GENERATION
 
     //GENERATE DECORATIONS
     var etcSpawn = requiredData.etcSpawn;
@@ -760,14 +764,7 @@ function generateType2Level(requiredData) {
         console.error("Invalid obstructions percent! Continuing with default value!");
     }
     var obstructionsCount = Math.floor((n * m) * (obstructionsPerc / 100));
-    var maxtriescount = 0;
     while (generateObstructions) {
-        maxtriescount += 1;
-        if (maxtriescount >= 5) {
-            generateObstructions = false;
-            console.error("Could not generate obstructions, try different values of the variables!");
-            break;
-        }
         switch (randomIntFromInterval(0, 3)) {
             case 0:
                 generateObstructions = generateRandomObstructions(n, m, obstructionsPerc, tiles);
@@ -844,14 +841,8 @@ function generateType3Level(requiredData) {
         console.error("Invalid obstructions percent! Continuing with default value!");
     }
     var obstructionsCount = Math.floor((n * m) * (obstructionsPerc / 100));
-    var maxtriescount = 0;
+
     while (generateObstructions) {
-        maxtriescount += 1;
-        if (maxtriescount >= 5) {
-            generateObstructions = false;
-            console.error("Could not generate obstructions, try different values of the variables!");
-            break;
-        }
         if (walln && walls && walle && wallw) { //CLOSED ROOM
             switch (randomIntFromInterval(0, 3)) {
                 case 0:
@@ -1080,10 +1071,10 @@ function generateLevel(which) {
     var chance1 = $("#chance1").val();
     var chance2 = $("#chance2").val();
     var chance3 = $("#chance3").val();
-    var generateTreeWalls = $("input[name=generateTreeWalls]:checked").val() === "true";
+    var generateWalls = $("input[name=generateTreeWalls]:checked").val() === "true";
     var generateVerticalWalls = $("input[name=generateVerticalWalls]:checked").val() === "true";
     var generageHorizontalWalls = $("input[name=generateHorizontalWalls]:checked").val() === "true";
-    var generateForest = $("input[name=generateForest]:checked").val() === "true";
+    var fillLevel = $("input[name=generateForest]:checked").val() === "true";
     var etcSpawn = $("input[name=etcSpawn]:checked").val() === "true";
     var etcTileChance = $("#etcTileChance").val();
     switch (type) {
@@ -1113,11 +1104,19 @@ function generateLevel(which) {
             break;
     }
 
+    var doorn = $("input[name='doorn']:checked").val() === "true";
+    var doore = $("input[name='doore']:checked").val() === "true";
+    var doors = $("input[name='doors']:checked").val() === "true";
+    var doorw = $("input[name='doorw']:checked").val() === "true";
     var generateObstructionsT2 = $("input[name=genobst2]:checked").val() === "true";
     var generateDecorationsT2 = $("input[name=gendecot2]:checked").val() === "true";
     var obsperct2 = $("#obsPercT2").val();
     var decoperct2 = $("#decoPercT2").val();
 
+    var walln = $("input[name='walln']:checked").val() === "true";
+    var walle = $("input[name='walle']:checked").val() === "true";
+    var walls = $("input[name='walls']:checked").val() === "true";
+    var wallw = $("input[name='wallw']:checked").val() === "true";
     var generateObstructionsT3 = $("input[name=genobst3]:checked").val() === "true";
     var generateDecorationsT3 = $("input[name=gendecot3]:checked").val() === "true";
     var generateStairT3 = $("input[name=genstairt3]:checked").val() === "true";
@@ -1134,10 +1133,10 @@ function generateLevel(which) {
                 chance1: chance1,
                 chance2: chance2,
                 chance3: chance3,
-                generateTreeWalls: generateTreeWalls,
+                generateWalls: generateWalls,
                 generateVerticalWalls: generateVerticalWalls,
                 generateHorizontalWalls: generageHorizontalWalls,
-                generateForest: generateForest,
+                fillLevel: fillLevel,
                 etcSpawn: etcSpawn,
                 etcTileChance: etcTileChance
             };
@@ -1147,10 +1146,10 @@ function generateLevel(which) {
             requiredData = {
                 n: n,
                 m: m,
-                doorn: $("input[name='doorn']:checked").val() === "true",
-                doore: $("input[name='doore']:checked").val() === "true",
-                doors: $("input[name='doors']:checked").val() === "true",
-                doorw: $("input[name='doorw']:checked").val() === "true",
+                doorn: doorn,
+                doore: doore,
+                doors: doors,
+                doorw: doorw,
                 generateObstructions: generateObstructionsT2,
                 obstructionsPerc: obsperct2,
                 generateDecorationsSwitch: generateDecorationsT2,
@@ -1165,10 +1164,10 @@ function generateLevel(which) {
             requiredData = {
                 n: n,
                 m: m,
-                walln: $("input[name='walln']:checked").val() === "true",
-                walle: $("input[name='walle']:checked").val() === "true",
-                walls: $("input[name='walls']:checked").val() === "true",
-                wallw: $("input[name='wallw']:checked").val() === "true",
+                walln: walln,
+                walle: walle,
+                walls: walls,
+                wallw: wallw,
                 generateObstructions: generateObstructionsT3,
                 obstructionsPerc: obsperct3,
                 generateDecorationsSwitch: generateDecorationsT3,
