@@ -161,57 +161,6 @@ function checkDownLeft(tiles, overx, overy, m) {
     }
     return false;
 }
-function generateDarkness(n, m, obstructionsCount, tiles) {
-    "use strict";
-    var maxtriescount = 0;
-    var generateMore = true;
-    var testtilex, testtiley, temptype;
-    var sidesize, i, j, rotation;
-    testtilex = randomIntFromInterval(2, n - 6);//m - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
-    testtiley = randomIntFromInterval(2, m - 6);//n - 6 = 0-based, the wall, at least one space from the wall, at least 3 spaces for the darkness
-    sidesize = Math.floor(Math.sqrt(obstructionsCount));
-    while (maxtriescount < 5) {
-        maxtriescount += 1;
-        if (testtilex + sidesize < n - 2 && testtiley + sidesize < m - 2) { //check bounds
-            for (i = 0; i < sidesize; i += 1) {
-                for (j = 0; j < sidesize; j += 1) {
-                    if (i === 0 && j === 0) {
-                        temptype = TilesEnum.DARKC;
-                        rotation = 0;
-                    } else if (i === sidesize - 1 && j === 0) {
-                        temptype = TilesEnum.DARKC;
-                        rotation = 1;
-                    } else if (i === 0 && j === sidesize - 1) {
-                        temptype = TilesEnum.DARKC;
-                        rotation = 3;
-                    } else if (i === sidesize - 1 && j === sidesize - 1) {
-                        temptype = TilesEnum.DARKC;
-                        rotation = 2;
-                    } else if (i === 0) {
-                        temptype = TilesEnum.DARKW;
-                        rotation = 3;
-                    } else if (j === 0) {
-                        temptype = TilesEnum.DARKW;
-                        rotation = 0;
-                    } else if (j === sidesize - 1) {
-                        temptype = TilesEnum.DARKW;
-                        rotation = 2;
-                    } else if (i === sidesize - 1) {
-                        temptype = TilesEnum.DARKW;
-                        rotation = 1;
-                    } else {
-                        temptype = TilesEnum.DARK;
-                        rotation = 0;
-                    }
-                    tiles[testtilex + i][testtiley + j].tiletype = temptype;
-                    tiles[testtilex + i][testtiley + j].rotation = rotation;
-                }
-            }
-            generateMore = false;
-        }
-    }
-    return generateMore;
-}
 function generateDecorationsExt(n, m, tiles, decorationsChance, walln, walls, wallw, walle, generateByWalls) {
     "use strict";
     /**
@@ -261,6 +210,62 @@ function generateDecorationsExt(n, m, tiles, decorationsChance, walln, walls, wa
 function generateDecorations(n, m, tiles, decorationsChance) {
     "use strict";
     generateDecorationsExt(n, m, tiles, decorationsChance, false, false, false, false, false);
+}
+function generateDarkness(n, m, obstructionsCount, tiles) {
+    "use strict";
+    var maxtriescount = 0;
+    var generateMore = true;
+    var testtilex, testtiley, temptype;
+    var sidesize, i, j, rotation;
+    sidesize = Math.floor(Math.sqrt(obstructionsCount));
+    var xsize = n - (sidesize + 2);
+    var ysize = m - (sidesize + 2);
+    if (xsize < 2 || ysize < 2) {
+        return true;
+    }
+    while (maxtriescount < 5) {
+        maxtriescount += 1;
+        testtilex = randomIntFromInterval(2, xsize);
+        testtiley = randomIntFromInterval(2, ysize);
+        if (testtilex + sidesize < n - 2 && testtiley + sidesize < m - 2) {
+            for (i = 0; i < sidesize; i += 1) {
+                for (j = 0; j < sidesize; j += 1) {
+                    if (i === 0 && j === 0) {
+                        temptype = TilesEnum.DARKC;
+                        rotation = 0;
+                    } else if (i === sidesize - 1 && j === 0) {
+                        temptype = TilesEnum.DARKC;
+                        rotation = 1;
+                    } else if (i === 0 && j === sidesize - 1) {
+                        temptype = TilesEnum.DARKC;
+                        rotation = 3;
+                    } else if (i === sidesize - 1 && j === sidesize - 1) {
+                        temptype = TilesEnum.DARKC;
+                        rotation = 2;
+                    } else if (i === 0) {
+                        temptype = TilesEnum.DARKW;
+                        rotation = 3;
+                    } else if (j === 0) {
+                        temptype = TilesEnum.DARKW;
+                        rotation = 0;
+                    } else if (j === sidesize - 1) {
+                        temptype = TilesEnum.DARKW;
+                        rotation = 2;
+                    } else if (i === sidesize - 1) {
+                        temptype = TilesEnum.DARKW;
+                        rotation = 1;
+                    } else {
+                        temptype = TilesEnum.DARK;
+                        rotation = 0;
+                    }
+                    tiles[testtilex + i][testtiley + j].tiletype = temptype;
+                    tiles[testtilex + i][testtiley + j].rotation = rotation;
+                }
+            }
+            generateMore = false;
+        }
+    }
+    return generateMore;
 }
 function generateHorizontalObstructions(n, m, tiles) {
     "use strict";
@@ -610,21 +615,23 @@ function generateType1Level(requiredData) {
                 }
             }
         } else { //GENERATE WALLS ONLY
-            var generateVerticalWalls = requiredData.generateVerticalWalls;
             var generateHorizontalWalls = requiredData.generateHorizontalWalls;
-            for (i = 0; i < n; i += 1) {
-                for (j = 0; j < m; j += 1) {
-                    if (generateHorizontalWalls) {
-                        if (j === 0 || j === m - 1) {
-                            if (tiles[i][j].tiletype !== TilesEnum.PATH) {
-                                tiles[i][j].tiletype = TilesEnum.WALL;
+            var generateVerticalWalls = requiredData.generateVerticalWalls;
+            if (generateHorizontalWalls || generateVerticalWalls) {
+                for (i = 0; i < n; i += 1) {
+                    for (j = 0; j < m; j += 1) {
+                        if (generateHorizontalWalls) {
+                            if (j === 0 || j === m - 1) {
+                                if (tiles[i][j].tiletype !== TilesEnum.PATH) {
+                                    tiles[i][j].tiletype = TilesEnum.WALL;
+                                }
                             }
                         }
-                    }
-                    if (generateVerticalWalls) {
-                        if (i === 0 || i === n - 1) {
-                            if (tiles[i][j].tiletype !== TilesEnum.PATH) {
-                                tiles[i][j].tiletype = TilesEnum.WALL;
+                        if (generateVerticalWalls) {
+                            if (i === 0 || i === n - 1) {
+                                if (tiles[i][j].tiletype !== TilesEnum.PATH) {
+                                    tiles[i][j].tiletype = TilesEnum.WALL;
+                                }
                             }
                         }
                     }
@@ -687,7 +694,7 @@ function generateType1Level(requiredData) {
         for (i = 0; i < n; i += 1) {
             for (j = 0; j < m; j += 1) {
                 if (tiles[i][j].tiletype === TilesEnum.BASIC) {
-                    if (randomIntFromInterval(1, 100) < etcTileChance) {
+                    if (randomIntFromInterval(1, 100) <= etcTileChance) {
                         tiles[i][j].tiletype = TilesEnum.ETC;
                     }
                 }
@@ -806,10 +813,13 @@ function generateType3Level(requiredData) {
     for (i = 0; i < n; i += 1) {
         for (j = 0; j < m; j += 1) {
             if ((i === 0 && j === 0) || (i === 0 && j === m - 1) || (i === n - 1 && j === 0) || (i === n - 1 && j === m - 1)) {
+                //Corner
                 tiletype = 1;
             } else if ((walln && j === 0) || (walle && i === n - 1) || (wallw && i === 0) || (walls && j === m - 1)) {
+                //Wall
                 tiletype = 1;
             } else {
+                //Basic tile
                 tiletype = 0;
             }
             switch (tiletype) {
