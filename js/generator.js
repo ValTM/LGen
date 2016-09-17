@@ -263,6 +263,7 @@ function generateDarkness(n, m, obstructionsCount, tiles) {
                 }
             }
             generateMore = false;
+            maxtriescount = 5;
         }
     }
     return generateMore;
