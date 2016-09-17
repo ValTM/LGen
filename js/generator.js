@@ -437,8 +437,9 @@ function generateType1Level(requiredData) {
     var overX = parseInt(requiredData.overX);
     var overY = parseInt(requiredData.overY);
     if (isNaN(overX) || overX < 0 || isNaN(overY) || overY < 0) {
-        console.error("Invalid overX or overY values");
-        return [];
+        console.error("Invalid overX or overY values, continuing with default");
+        overX = Math.floor(n / 2);
+        overY = Math.floor(m / 2);
     }
     switch (type) {
         case 0:
@@ -447,11 +448,11 @@ function generateType1Level(requiredData) {
             overX = 0;
             if (overY < 2) {
                 overY = 2;
-                console.log("Cannot have value < 2 for overY");
+                console.log("Cannot have value < 2 for overY for type " + (type + 1));
             }
             if (overY > m - 2) {
                 overY = m - 2;
-                console.log("Cannot have value > m - 2 for overY");
+                console.log("Cannot have value > m - 2 for overY for type " + (type + 1));
             }
             break;
         case 1:
@@ -459,22 +460,22 @@ function generateType1Level(requiredData) {
             overY = 0;
             if (overX < 2) {
                 overX = 2;
-                console.log("Cannot have value < 2 for overX!");
+                console.log("Cannot have value < 2 for overX for type " + (type + 1));
             }
             if (overX > n - 2) {
                 overX = n - 2;
-                console.log("Cannot have value > n - 2 for overX");
+                console.log("Cannot have value > n - 2 for overX for type " + (type + 1));
             }
             break;
         case 5:
             overY = m - 1;
             if (overX < 2) {
                 overX = 2;
-                console.log("Cannot have value < 2 for overX!");
+                console.log("Cannot have value < 2 for overX for type " + (type + 1));
             }
             if (overX > n - 2) {
                 overX = n - 2;
-                console.log("Cannot have value > n - 2 for overX");
+                console.log("Cannot have value > n - 2 for overX for type " + (type + 1));
             }
             break;
     }
