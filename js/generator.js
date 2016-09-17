@@ -411,6 +411,18 @@ function calculateDirection(chance1, chance2, chance3, overX, overY, n, m, type)
     }
     return direction;
 }
+function checkOtherCoordinate(overAny, type, length) {
+    "use strict";
+    if (overAny < 2) {
+        overAny = 2;
+        console.log("Cannot have value < 2 for the non-leading coordinate for type " + (type + 1));
+    }
+    if (overAny > length - 2) {
+        overAny = length - 2;
+        console.log("Cannot have value > (length of the wall - 2) for the non-leading coordinate for type " + (type + 1));
+    }
+    return overAny;
+}
 function generateType1Level(requiredData) {
     "use strict";
     var n = parseInt(requiredData.n);
@@ -446,37 +458,16 @@ function generateType1Level(requiredData) {
         case 2:
         case 3:
             overX = 0;
-            if (overY < 2) {
-                overY = 2;
-                console.log("Cannot have value < 2 for overY for type " + (type + 1));
-            }
-            if (overY > m - 2) {
-                overY = m - 2;
-                console.log("Cannot have value > m - 2 for overY for type " + (type + 1));
-            }
+            overY = checkOtherCoordinate(overY, type, m);
             break;
         case 1:
         case 4:
             overY = 0;
-            if (overX < 2) {
-                overX = 2;
-                console.log("Cannot have value < 2 for overX for type " + (type + 1));
-            }
-            if (overX > n - 2) {
-                overX = n - 2;
-                console.log("Cannot have value > n - 2 for overX for type " + (type + 1));
-            }
+            overX = checkOtherCoordinate(overX, type, n);
             break;
         case 5:
             overY = m - 1;
-            if (overX < 2) {
-                overX = 2;
-                console.log("Cannot have value < 2 for overX for type " + (type + 1));
-            }
-            if (overX > n - 2) {
-                overX = n - 2;
-                console.log("Cannot have value > n - 2 for overX for type " + (type + 1));
-            }
+            overX = checkOtherCoordinate(overX, type, n);
             break;
     }
 
