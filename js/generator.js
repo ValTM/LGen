@@ -421,7 +421,7 @@ function generateType1Level(requiredData) {
     }
     tiles = getTilesArray(n);
     var i, j;
-    var type = requiredData.type;
+    var type = parseInt(requiredData.type);
     if (isNaN(type) || type < 0 || type > 5) {
         console.error("Invalid type! Continuing with default");
         type = 0;
