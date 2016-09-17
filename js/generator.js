@@ -183,8 +183,8 @@ function generateDecorationsExt(n, m, tiles, decorationsChance, walln, walls, wa
                 if (tiles[i - 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j - 1].tiletype !== TilesEnum.DOOR && tiles[i + 1][j].tiletype !== TilesEnum.DOOR && tiles[i][j + 1].tiletype !== TilesEnum.DOOR) {//NOT NEXT TO DOORS CHECK
                     if (randomIntFromInterval(1, 100) - (100 - decorationsChance) >= 0) {
                         if (tiles[i][j].tiletype === TilesEnum.BASIC) {
-                            temp = randomIntFromInterval(11, 14);
-                            if (temp === 11) {
+                            temp = randomIntFromInterval(0, 1);
+                            if (temp === 1) {
                                 benchRotation = 0;//default
                                 if (j === 1 && i > 1) {//0
                                     benchRotation = 0;
@@ -196,8 +196,8 @@ function generateDecorationsExt(n, m, tiles, decorationsChance, walln, walls, wa
                                     benchRotation = 3;
                                 }
                             }
-                            tiles[i][j].tiletype = temp === 11 ? TilesEnum.BENCH : TilesEnum.ETC;
-                            if (temp === 11) {
+                            tiles[i][j].tiletype = temp === 1 ? TilesEnum.BENCH : TilesEnum.ETC;
+                            if (temp === 1) {
                                 tiles[i][j].rotation = benchRotation;
                             }
                         }
